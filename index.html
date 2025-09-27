@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'nonce-hwmaker-2025'; style-src 'self'; img-src 'self' data:; base-uri 'none'; object-src 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>House × Year Entra ID CSV Generator (No ZIP)</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <h1>House × Year Entra ID CSV Generator</h1>
+  <p class="small">All processing happens locally in your browser. Works offline. No data is uploaded anywhere.</p>
+
+  <div class="grid inputs">
+    <div class="card">
+      <label for="ad12">AD export (Y12 OU) — <span class="hint">tab-delimited .txt; requires “User Logon Name”, “E-Mail Address”</span></label>
+      <input id="ad12" type="file" accept=".txt,.tsv,.tab,text/plain" />
+    </div>
+    <div class="card">
+      <label for="ad13">AD export (Y13 OU) — <span class="hint">tab-delimited .txt; requires “User Logon Name”, “E-Mail Address”</span></label>
+      <input id="ad13" type="file" accept=".txt,.tsv,.tab,text/plain" />
+    </div>
+    <div class="card">
+      <label for="bromcom">Bromcom export — <span class="hint">CSV; requires “House(s)”, “Student email”, “Year Group Name”</span></label>
+      <input id="bromcom" type="file" accept=".csv,text/csv" />
+    </div>
+    <div class="card">
+      <label for="entra">Entra AD export — <span class="hint">CSV; requires “id”, “userPrincipalName”</span></label>
+      <input id="entra" type="file" accept=".csv,text/csv" />
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <button id="generate" disabled>Generate CSVs</button>
+    <label class="hint" for="saveMode">Save mode:</label>
+    <select id="saveMode">
+      <option value="folder">Save to a folder (recommended)</option>
+      <option value="downloads">Download each CSV</option>
+    </select>
+    <span id="status" class="hint">Select all four files to enable.</span>
+  </div>
+
+  <div class="card mt-3 hidden" id="results">
+    <div class="row mb-2">
+      <span class="stat">Processed: <b id="statProcessed">0</b></span>
+      <span class="stat">Matched: <b id="statMatched">0</b></span>
+      <span class="stat">Missing: <b id="statMissing">0</b></span>
+      <span class="stat">Groups (House×Year): <b id="statGroups">0</b></span>
+      <span class="stat">CSV files: <b id="statCsvs">0</b></span>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 1fr;">
+      <div>
+        <h3 class="mb-1">CSV files generated</h3>
+        <div id="csvList" class="list hint"></div>
+      </div>
+    </div>
+
+    <details class="mt-3">
+      <summary><b>Missing matches report</b> — <span class="hint">unmatched emails & reasons</span></summary>
+      <div class="h-320">
+        <table>
+          <thead><tr><th>#</th><th>Student email</th><th>Reason</th><th>Details</th></tr></thead>
+          <tbody id="missingTbody"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <details class="mt-3">
+      <summary><b>Duplicates across AD Y12/Y13</b> — <span class="hint">same email in both AD files</span></summary>
+      <div class="h-260">
+        <table>
+          <thead><tr><th>#</th><th>Email</th><th>UPN (Y12)</th><th>UPN (Y13)</th><th>Status</th></tr></thead>
+          <tbody id="dupeTbody"></tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+
+  <p class="hint small mt-4">
+    Output CSV format (exact):<br/>
+    <code>version:v1.0</code><br/>
+    <code>Member object ID or user principal name [memberObjectIdOrUpn] Required</code><br/>
+    <code>Example: 9832aad8-e4fe-496b-a604-95c6eF01ae75</code><br/>
+    followed by one Entra <code>id</code> per line.
+  </p>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
