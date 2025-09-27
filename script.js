@@ -160,7 +160,7 @@ function renderResults(res){
 
 byId('generate').addEventListener('click', async ()=>{
   const btn=byId('generate'); const status=byId('status'); const mode=byId('saveMode').value;
-  btn.disabled=true; status.textContent='Processing…';
+  btn.disabled=true; status.textContent='Processing...';
   try{
     const res = await processFiles({
       ad12File: requiredFiles.ad12,
@@ -175,16 +175,16 @@ byId('generate').addEventListener('click', async ()=>{
       status.textContent = 'No CSVs to save (no matches).';
     } else if (mode === 'folder') {
       if ('showDirectoryPicker' in window) {
-        status.textContent='Choose a folder to save the CSVs…';
+        status.textContent='Choose a folder to save the CSVs...';
         await saveCsvsToFolder(res.files);
         status.textContent='Saved CSVs to the chosen folder.';
       } else {
-        status.textContent='Folder save not supported in this browser—falling back to individual downloads below.';
+        status.textContent='Folder save not supported in this browser; falling back to individual downloads below.';
         // replace plain list with clickable downloads
         const list=byId('csvList'); list.innerHTML=''; offerIndividualDownloads(res.files);
       }
     } else { // downloads
-      status.textContent='Creating download links…';
+      status.textContent='Creating download links...';
       const list=byId('csvList'); list.innerHTML=''; offerIndividualDownloads(res.files);
       status.textContent='Click each filename to download.';
     }
