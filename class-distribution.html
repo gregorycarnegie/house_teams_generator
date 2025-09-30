@@ -3,15 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta http-equiv="Content-Security-Policy"
-<<<<<<< HEAD
-      content="default-src 'self'; script-src 'self' 'nonce-distribution-2025'; style-src 'self'; img-src 'self' data:; base-uri 'none'; object-src 'none'">
-=======
       content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self'; img-src 'self' data:; base-uri 'none'; object-src 'none'">
->>>>>>> 43d189c18a5eb6fe80f6199ad7a88df2d54ec39c
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Class Distribution Group Generator - Entra ID</title>
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="distribution-styles.css">
+<link rel="stylesheet" href="house-teams.css">
+<link rel="stylesheet" href="class-distribution.css">
 </head>
 <body>
 <div class="page">
@@ -36,11 +32,7 @@
               <h3>Student Emails Report</h3>
             </div>
           </div>
-<<<<<<< HEAD
-          <p class="upload-card__description hint">Bromcom XLSX file with headers on row 2: "Preferred Last name", "Preferred First name", "Admission Number", "Year Group Name", "Student email"</p>
-=======
           <p class="upload-card__description hint">Bromcom XLSX file with headers on row 1: "Admission Number", "Year Group Name", "Student email"</p>
->>>>>>> 43d189c18a5eb6fe80f6199ad7a88df2d54ec39c
           <label class="file-picker" for="studentEmails">
             <span class="file-picker__title">Select or drop file</span>
             <span class="file-picker__formats">XLSX</span>
@@ -85,11 +77,11 @@
         <h2>2. Configure filters and output</h2>
         <p class="hint">Enter class tags to filter students and choose whether to split by year group.</p>
       </div>
-      
+
       <div class="controls-grid">
         <div class="control-group control-group--wide">
           <label for="classTagFilters">Class tag filters</label>
-          <textarea id="classTagFilters" 
+          <textarea id="classTagFilters"
                     placeholder="Enter class tags (one per line or space-separated)&#10;Example: MAT MAF SCI"
                     rows="3"></textarea>
           <span class="hint small">Students will be included if their StudentClassList contains ANY of these tags (substring match, case-insensitive)</span>
@@ -106,7 +98,7 @@
         <button id="generate" disabled>
           <span class="button__label">Generate Distribution Group CSV(s)</span>
         </button>
-        
+
         <span id="status" class="status-text hint">Select all three files and enter at least one tag to enable.</span>
       </div>
     </section>
@@ -175,6 +167,6 @@
   </footer>
 </div>
 
-<script src="distribution.js"></script>
+<script src="class-distribution.js"></script>
 </body>
 </html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; object-src 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Entra ID CSV Generators</title>
+<link rel="stylesheet" href="house-teams.css">
+<style>
+  .landing-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .landing-hero {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .landing-hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+
+  .landing-hero p {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+  }
+
+  .feature-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .feature-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border-color: var(--accent);
+  }
+
+  .feature-card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .feature-card h2::before {
+    content: '→';
+    font-size: 1.75rem;
+    color: var(--accent);
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.2s ease;
+  }
+
+  .feature-card:hover h2::before {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .feature-card p {
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    flex-grow: 1;
+  }
+
+  .feature-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0 0;
+  }
+
+  .feature-card li {
+    padding: 0.5rem 0;
+    color: var(--text-dim);
+    font-size: 0.95rem;
+  }
+
+  .feature-card li::before {
+    content: '✓';
+    color: var(--good);
+    font-weight: bold;
+    margin-right: 0.5rem;
+  }
+
+  .feature-tag {
+    display: inline-block;
+    background: var(--accent-dim);
+    color: var(--accent);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .footer-info {
+    text-align: center;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+<div class="landing-container">
+  <header class="landing-hero">
+    <h1>Entra ID CSV Generators</h1>
+    <p>Offline tools for generating Entra ID distribution group CSV files from Bromcom and Active Directory exports.</p>
+    <p class="hint">All processing happens locally in your browser. No data is uploaded anywhere.</p>
+  </header>
+
+  <main>
+    <div class="feature-cards">
+      <a href="house-teams.html" class="feature-card">
+        <span class="feature-tag">House & Year Groups</span>
+        <h2>House & Year Teams Generator</h2>
+        <p>Generate Entra ID CSV files for house and year group combinations. Matches students across Active Directory (Y12 & Y13), Bromcom, and Entra ID exports.</p>
+        <ul>
+          <li>Upload 4 source files (AD Y12, AD Y13, Bromcom, Entra ID)</li>
+          <li>Automatic matching by email address</li>
+          <li>Generates CSVs for each house-year combination</li>
+          <li>Detailed missing matches and duplicate reports</li>
+        </ul>
+      </a>
+
+      <a href="class-distribution.html" class="feature-card">
+        <span class="feature-tag">Class Distribution</span>
+        <h2>Class Distribution Group Generator</h2>
+        <p>Generate Entra ID CSV files filtered by class tags. Perfect for creating distribution groups based on subjects or class lists.</p>
+        <ul>
+          <li>Upload 3 source files (Student Emails, Class List, Entra ID)</li>
+          <li>Filter students by class tags (e.g., MAT, SCI, ENG)</li>
+          <li>Optional split by year group</li>
+          <li>Processing log with detailed warnings</li>
+        </ul>
+      </a>
+    </div>
+  </main>
+
+  <footer class="footer-info">
+    <p><strong>Privacy & Security:</strong> All files are processed entirely in your browser. No data is transmitted to any server.</p>
+    <p>Works offline once loaded. Compatible with modern browsers.</p>
+  </footer>
+</div>
+</body>
+</html>

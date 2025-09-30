@@ -56,8 +56,6 @@ textarea::placeholder {
   cursor: pointer;
 }
 
-<<<<<<< HEAD
-=======
 /* File picker transitions */
 .file-picker {
   transition: all 0.3s ease;
@@ -71,7 +69,6 @@ textarea::placeholder {
   max-width: 100%;
 }
 
->>>>>>> 43d189c18a5eb6fe80f6199ad7a88df2d54ec39c
 .log-container {
   margin-top: 14px;
   padding: 16px;
