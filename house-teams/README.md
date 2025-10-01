@@ -11,24 +11,24 @@ The application is now organized into a modular structure:
 ```text
 house-teams/
 ├── src/                # TypeScript source files
-│   ├── core/           # Core business logic
-│   │   ├── AppState.ts        # Central state management
-│   │   ├── DataMatcher.ts     # Student data matching logic
-│   │   └── errors.ts          # Custom error classes
-│   ├── ui/             # UI components
-│   │   └── FileUploadCard.ts  # File upload component
-│   ├── parsers/        # File parsing
-│   │   └── SpreadsheetParser.ts  # CSV parsing
-│   ├── generators/     # Output generators
-│   │   └── HouseTeamsGenerator.ts  # CSV generation & file saving
 │   ├── config/         # Configuration
 │   │   └── tools.ts           # Tool configurations
-│   ├── utils/          # Utilities
-│   │   └── Logger.ts          # Logging utility
+│   ├── core/           # Core business logic (tool-specific)
+│   │   └── DataMatcher.ts     # Student data matching logic
+│   ├── generators/     # Output generators
+│   │   └── HouseTeamsGenerator.ts  # CSV generation & file saving
+│   ├── parsers/        # File parsing
+│   │   └── SpreadsheetParser.ts  # CSV parsing
 │   └── main.ts         # Application entry point
 ├── dist/               # Compiled JavaScript (git-ignored)
 ├── index.html          # Tool UI
 └── tsconfig.json       # TypeScript configuration
+
+Shared modules (imported from ../shared/src/):
+├── core/AppState.ts        # Central state management
+├── core/errors.ts          # Custom error classes
+├── ui/FileUploadCard.ts    # File upload component
+└── utils/Logger.ts         # Logging utility
 ```
 
 ## Key Features
@@ -55,7 +55,7 @@ house-teams/
 
 ### 4. **Configuration-Driven UI**
 
-- Tool configuration in `config/tools.js`
+- Tool configuration in `config/tools.ts`
 - Easy to add new file types or validation rules
 - Consistent UI generation
 - Self-documenting configuration
@@ -139,18 +139,6 @@ Then navigate to `http://localhost:8002`
 
 ## Development
 
-The code uses ES6 modules, so you need to serve it via HTTP (not `file://`).
-
-To modify the tool:
-
-1. Edit `src/config/tools.ts` for file requirements
-2. Edit `src/core/DataMatcher.ts` for matching logic
-3. Edit `src/generators/HouseTeamsGenerator.ts` for CSV generation
-
-Remember to run `npm run build:house-teams` after making changes!
-
-## Development
-
 ### Building
 
 ```bash
@@ -169,6 +157,16 @@ The code uses ES6 modules, so you need to serve it via HTTP (not `file://`).
 python -m http.server 8000
 # Then navigate to http://localhost:8000/house-teams/
 ```
+
+### Making Changes
+
+To modify the tool:
+
+1. Edit `src/config/tools.ts` for file requirements
+2. Edit `src/core/DataMatcher.ts` for matching logic
+3. Edit `src/generators/HouseTeamsGenerator.ts` for CSV generation
+
+Remember to run `npm run build:house-teams` after making changes!
 
 ## Migration from Old Code
 
@@ -199,6 +197,6 @@ The refactored code provides significantly better:
 
 ## Documentation
 
-- [TypeScript Quick Start](../TYPESCRIPT_QUICK_START.md) - TypeScript development guide
-- [Project Documentation](../docs/) - Comprehensive guides and references
 - [Main README](../README.md) - Project overview
+- [Class Distribution Tool](../class-distribution/README.md) - Sibling tool documentation
+- [Architecture Guide](../class-distribution/ARCHITECTURE.md) - Detailed architecture patterns

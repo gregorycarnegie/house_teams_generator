@@ -95,24 +95,32 @@ house_teams_generator/
 │
 ├── class-distribution/          # Class distribution tool
 │   ├── src/                     # TypeScript source files
+│   │   ├── config/              # tools.ts
+│   │   ├── core/                # DataMatcher.ts
+│   │   ├── generators/          # ClassDistributionGenerator.ts
+│   │   ├── parsers/             # SpreadsheetParser.ts
+│   │   └── main.ts              # Entry point
 │   ├── dist/                    # Compiled JavaScript (git-ignored)
-│   ├── index.html              # Tool UI
-│   └── README.md               # Tool documentation
+│   ├── index.html               # Tool UI
+│   ├── tsconfig.json            # TypeScript configuration
+│   ├── ARCHITECTURE.md          # Architecture documentation
+│   └── README.md                # Tool documentation
 │
 ├── house-teams/                 # House teams tool
 │   ├── src/                     # TypeScript source files
+│   │   ├── config/              # tools.ts
+│   │   ├── core/                # DataMatcher.ts
+│   │   ├── generators/          # HouseTeamsGenerator.ts
+│   │   ├── parsers/             # SpreadsheetParser.ts
+│   │   └── main.ts              # Entry point
 │   ├── dist/                    # Compiled JavaScript (git-ignored)
-│   ├── index.html              # Tool UI
-│   └── README.md               # Tool documentation
-│
-├── docs/                        # Documentation
-│   ├── TYPESCRIPT_QUICK_START.md
-│   ├── TYPESCRIPT_GUIDE.md
-│   ├── PROJECT_STRUCTURE.md
-│   └── ...
+│   ├── index.html               # Tool UI
+│   ├── tsconfig.json            # TypeScript configuration
+│   └── README.md                # Tool documentation
 │
 ├── package.json                 # Dependencies and build scripts
-└── tsconfig.json               # TypeScript configuration
+├── tsconfig.json                # Root TypeScript configuration
+└── README.md                    # This file
 ```
 
 ## 🔧 Development
@@ -150,12 +158,9 @@ npm run type-check
 
 ## 📖 Documentation
 
-- [**Quick Start Guide**](TYPESCRIPT_QUICK_START.md) - Get started with TypeScript
-- [**Shared Code Refactoring**](SHARED_CODE_REFACTORING.md) - How code duplication was eliminated
-- [**TypeScript Guide**](docs/TYPESCRIPT_GUIDE.md) - Comprehensive TypeScript integration guide
-- [**Project Structure**](docs/PROJECT_STRUCTURE.md) - Detailed architecture overview
-- [**Refactoring Summary**](docs/REFACTORING_SUMMARY.md) - Migration from monolithic to modular
-- [**Completion Summary**](docs/TYPESCRIPT_COMPLETION_SUMMARY.md) - What was accomplished
+- [**Class Distribution README**](class-distribution/README.md) - Class distribution tool documentation
+- [**House Teams README**](house-teams/README.md) - House teams tool documentation
+- [**Architecture Guide**](class-distribution/ARCHITECTURE.md) - Detailed architecture patterns
 
 ## 🏗️ Architecture
 

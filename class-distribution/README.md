@@ -11,24 +11,24 @@ The application is now organized into a modular structure:
 ```text
 class-distribution/
 ├── src/                # TypeScript source files
-│   ├── core/           # Core business logic
-│   │   ├── AppState.ts        # Central state management
-│   │   ├── DataMatcher.ts     # Student data matching logic
-│   │   └── errors.ts          # Custom error classes
-│   ├── ui/             # UI components
-│   │   └── FileUploadCard.ts  # File upload component
-│   ├── parsers/        # File parsing
-│   │   └── SpreadsheetParser.ts  # CSV/XLSX parsing
-│   ├── generators/     # Output generators
-│   │   └── ClassDistributionGenerator.ts  # CSV generation
 │   ├── config/         # Configuration
 │   │   └── tools.ts           # Tool configurations
-│   ├── utils/          # Utilities
-│   │   └── Logger.ts          # Logging utility
+│   ├── core/           # Core business logic (tool-specific)
+│   │   └── DataMatcher.ts     # Student data matching logic
+│   ├── generators/     # Output generators
+│   │   └── ClassDistributionGenerator.ts  # CSV generation
+│   ├── parsers/        # File parsing
+│   │   └── SpreadsheetParser.ts  # CSV/XLSX parsing
 │   └── main.ts         # Application entry point
 ├── dist/               # Compiled JavaScript (git-ignored)
 ├── index.html          # Tool UI
 └── tsconfig.json       # TypeScript configuration
+
+Shared modules (imported from ../shared/src/):
+├── core/AppState.ts        # Central state management
+├── core/errors.ts          # Custom error classes
+├── ui/FileUploadCard.ts    # File upload component
+└── utils/Logger.ts         # Logging utility
 ```
 
 ## Key Improvements
@@ -55,7 +55,7 @@ class-distribution/
 
 ### 4. **Configuration-Driven UI**
 
-- Tool configuration in `config/tools.js`
+- Tool configuration in `config/tools.ts`
 - Easy to add new file types or validation rules
 - Consistent UI generation
 - Self-documenting configuration
@@ -83,25 +83,25 @@ class-distribution/
 
 ## How It Works
 
-1. **Initialization** (`main.js`)
+1. **Initialization** (`main.ts`)
    - Load dependencies (SheetJS)
    - Create file upload cards from configuration
    - Set up event listeners
    - Subscribe to state changes
 
-2. **File Upload** (`FileUploadCard.js`)
+2. **File Upload** (`FileUploadCard.ts`)
    - User selects or drags files
    - Files are validated
    - Valid files are stored in `AppState`
    - UI updates reactively
 
-3. **Processing** (`ClassDistributionGenerator.js`)
+3. **Processing** (`ClassDistributionGenerator.ts`)
    - Parse all three files using `SpreadsheetParser`
    - Match student data using `DataMatcher`
    - Filter by class tags
    - Generate CSV files
 
-4. **Results** (`main.js`)
+4. **Results** (`main.ts`)
    - Display statistics
    - Render download links
    - Show year group breakdown
@@ -169,6 +169,5 @@ The old procedural code has been backed up to `script.js.old`. All JavaScript so
 ## Documentation
 
 - [Architecture Guide](ARCHITECTURE.md) - Detailed architecture documentation
-- [Migration Guide](MIGRATION_GUIDE.md) - Before/after comparison
-- [TypeScript Quick Start](../TYPESCRIPT_QUICK_START.md) - TypeScript development guide
-- [Project Documentation](../docs/) - Comprehensive guides and references
+- [Main README](../README.md) - Project overview
+- [House Teams Tool](../house-teams/README.md) - Sibling tool documentation
