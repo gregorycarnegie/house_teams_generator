@@ -24,50 +24,7 @@
       </div>
 
       <div class="grid inputs">
-        <div class="upload-card">
-          <div class="upload-card__meta">
-            <div class="upload-card__header">
-              <img src="../shared/icons/bromcom.svg" alt="Bromcom" class="upload-card__icon">
-              <h3>Student Emails Report</h3>
-            </div>
-          </div>
-          <p class="upload-card__description hint">Bromcom XLSX file with headers on row 1: "Admission Number", "Year Group Name", "Student email"</p>
-          <label class="file-picker" for="studentEmails">
-            <span class="file-picker__title">Select or drop file</span>
-            <span class="file-picker__formats">XLSX</span>
-            <input id="studentEmails" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
-          </label>
-        </div>
-
-        <div class="upload-card">
-          <div class="upload-card__meta">
-            <div class="upload-card__header">
-              <img src="../shared/icons/bromcom.svg" alt="Bromcom" class="upload-card__icon">
-              <h3>Student Class List</h3>
-            </div>
-          </div>
-          <p class="upload-card__description hint">Bromcom XLSX file with headers on row 2: "StudentFullName", "StudentYearGroup", "StudentClassList", "AdmissionNo"</p>
-          <label class="file-picker" for="studentClassList">
-            <span class="file-picker__title">Select or drop file</span>
-            <span class="file-picker__formats">XLSX</span>
-            <input id="studentClassList" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
-          </label>
-        </div>
-
-        <div class="upload-card">
-          <div class="upload-card__meta">
-            <div class="upload-card__header">
-              <img src="../shared/icons/entra.svg" alt="Entra ID" class="upload-card__icon">
-              <h3>Entra AD Export</h3>
-            </div>
-          </div>
-          <p class="upload-card__description hint">CSV file with headers: "mail", "id"</p>
-          <label class="file-picker" for="entraAd">
-            <span class="file-picker__title">Select or drop file</span>
-            <span class="file-picker__formats">CSV</span>
-            <input id="entraAd" type="file" accept=".csv,text/csv" />
-          </label>
-        </div>
+        <!-- File upload cards will be dynamically generated here -->
       </div>
     </section>
 
@@ -166,6 +123,6 @@
   </footer>
 </div>
 
-<script src="script.js"></script>
+<script type="module" src="dist/class-distribution/src/main.js"></script>
 </body>
 </html>

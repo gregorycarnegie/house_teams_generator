@@ -1,0 +1,30 @@
+{
+  "name": "house_teams_generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run build:class-distribution && npm run build:house-teams",
+    "build:class-distribution": "tsc -p class-distribution/tsconfig.json",
+    "build:house-teams": "tsc -p house-teams/tsconfig.json",
+    "build:watch": "tsc -p tsconfig.json --watch",
+    "type-check": "tsc --noEmit",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gregorycarnegie/house_teams_generator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/gregorycarnegie/house_teams_generator/issues"
+  },
+  "homepage": "https://github.com/gregorycarnegie/house_teams_generator#readme",
+  "devDependencies": {
+    "@types/node": "^24.6.1",
+    "typescript": "^5.9.3"
+  }
+}

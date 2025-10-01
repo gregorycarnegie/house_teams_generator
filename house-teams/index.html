@@ -24,35 +24,7 @@
       </div>
 
       <div class="grid inputs">
-        <div class="upload-card">
-          <div class="upload-card__meta">
-            <div class="upload-card__header">
-              <img src="../shared/icons/bromcom.svg" alt="Bromcom" class="upload-card__icon">
-              <h3>Bromcom export</h3>
-            </div>
-          </div>
-          <p class="upload-card__description hint">CSV including columns "House(s)", "Student email", and "Year Group Name".</p>
-          <label class="file-picker" for="bromcom">
-            <span class="file-picker__title">Select or drop file</span>
-            <span class="file-picker__formats">CSV</span>
-            <input id="bromcom" type="file" accept=".csv,text/csv" />
-          </label>
-        </div>
-
-        <div class="upload-card">
-          <div class="upload-card__meta">
-            <div class="upload-card__header">
-              <img src="../shared/icons/entra.svg" alt="Entra ID" class="upload-card__icon">
-              <h3>Entra ID export</h3>
-            </div>
-          </div>
-          <p class="upload-card__description hint">CSV including columns "id" and "mail".</p>
-          <label class="file-picker" for="entra">
-            <span class="file-picker__title">Select or drop file</span>
-            <span class="file-picker__formats">CSV</span>
-            <input id="entra" type="file" accept=".csv,text/csv" />
-          </label>
-        </div>
+        <!-- File upload cards will be dynamically generated here -->
       </div>
     </section>
 
@@ -136,7 +108,7 @@
   </footer>
 </div>
 
-<script src="script.js"></script>
+<script type="module" src="dist/house-teams/src/main.js"></script>
 </body>
 </html>
 
