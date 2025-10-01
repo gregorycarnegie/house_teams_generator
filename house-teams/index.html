@@ -27,36 +27,6 @@
         <div class="upload-card">
           <div class="upload-card__meta">
             <div class="upload-card__header">
-              <img src="../shared/icons/windows.svg" alt="Windows" class="upload-card__icon">
-              <h3>Active Directory export (Year 12 OU)</h3>
-            </div>
-          </div>
-          <p class="upload-card__description hint">Tab-delimited .txt including columns "User Logon Name" and "E-Mail Address".</p>
-          <label class="file-picker" for="ad12">
-            <span class="file-picker__title">Select or drop file</span>
-            <span class="file-picker__formats">TXT / TSV</span>
-            <input id="ad12" type="file" accept=".txt,.tsv,.tab,text/plain" />
-          </label>
-        </div>
-
-        <div class="upload-card">
-          <div class="upload-card__meta">
-            <div class="upload-card__header">
-              <img src="../shared/icons/windows.svg" alt="Windows" class="upload-card__icon">
-              <h3>Active Directory export (Year 13 OU)</h3>
-            </div>
-          </div>
-          <p class="upload-card__description hint">Tab-delimited .txt including columns "User Logon Name" and "E-Mail Address".</p>
-          <label class="file-picker" for="ad13">
-            <span class="file-picker__title">Select or drop file</span>
-            <span class="file-picker__formats">TXT / TSV</span>
-            <input id="ad13" type="file" accept=".txt,.tsv,.tab,text/plain" />
-          </label>
-        </div>
-
-        <div class="upload-card">
-          <div class="upload-card__meta">
-            <div class="upload-card__header">
               <img src="../shared/icons/bromcom.svg" alt="Bromcom" class="upload-card__icon">
               <h3>Bromcom export</h3>
             </div>
@@ -76,7 +46,7 @@
               <h3>Entra ID export</h3>
             </div>
           </div>
-          <p class="upload-card__description hint">CSV including columns "id" and "userPrincipalName".</p>
+          <p class="upload-card__description hint">CSV including columns "id" and "mail".</p>
           <label class="file-picker" for="entra">
             <span class="file-picker__title">Select or drop file</span>
             <span class="file-picker__formats">CSV</span>
@@ -102,7 +72,7 @@
             <option value="downloads">Download each CSV</option>
           </select>
         </div>
-        <span id="status" class="status-text hint">Select all four files to enable.</span>
+        <span id="status" class="status-text hint">Select both files to enable.</span>
       </div>
     </section>
 
@@ -152,17 +122,6 @@
         </div>
       </details>
 
-      <details class="report-block">
-        <summary><b>Duplicates across AD Year 12 and 13</b> <span class="hint">Same email appearing in both AD files</span></summary>
-        <div class="table-shell table-shell--medium">
-          <table>
-            <thead>
-              <tr><th>#</th><th>Email</th><th>UPN (Y12)</th><th>UPN (Y13)</th><th>Status</th></tr>
-            </thead>
-            <tbody id="dupeTbody"></tbody>
-          </table>
-        </div>
-      </details>
     </section>
   </main>
 
