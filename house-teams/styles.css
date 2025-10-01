@@ -42,6 +42,36 @@ a { color: inherit; }
   gap: 32px;
 }
 
+/* Navigation */
+.tool-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--card);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  margin-bottom: -8px;
+}
+
+.tool-nav__link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.tool-nav__link:hover {
+  background: rgba(121, 181, 255, 0.1);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
 .hero {
   background: linear-gradient(135deg, rgba(49, 84, 164, 0.4), rgba(24, 39, 86, 0.4));
   border: 1px solid var(--panel-border);
