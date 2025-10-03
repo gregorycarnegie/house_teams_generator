@@ -11,7 +11,8 @@
       "Bash(npm run build:class-distribution:*)",
       "Bash(npm run build:house-teams:*)",
       "Bash(npm run build:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm run test:run:*)"
     ],
     "deny": [],
     "ask": []
