@@ -31,6 +31,20 @@
       <div class="grid inputs">
         <!-- File upload cards will be dynamically generated here -->
       </div>
+
+      <div class="panel__footer">
+        <button id="previewData" disabled>
+          <span class="button__label">Preview Data</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="panel panel-preview hidden" id="dataPreview">
+      <div class="panel__header">
+        <h2>Data Preview</h2>
+        <p class="hint">Review the first few rows of each uploaded file before processing.</p>
+      </div>
+      <div id="previewContainer"></div>
     </section>
 
     <section class="panel panel-actions">

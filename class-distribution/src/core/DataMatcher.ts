@@ -1,6 +1,7 @@
 import { DataMatchingError } from '../../../shared/src/core/errors.js';
 import type { ParsedSpreadsheetData, StudentRecord } from '../../../types/index.js';
 import type { Logger } from '../../../shared/src/utils/Logger.js';
+import { validateStudentRecord } from '../../../shared/src/validation/schemas-browser.js';
 
 interface StudentLookupData {
   admissionNumber: string;
@@ -136,15 +137,18 @@ export class DataMatcher {
         continue;
       }
 
-      // Add to canonical list
-      canonicalStudents.push({
+      // Add to canonical list with validation
+      const studentRecord = {
         admissionNumber: admNo,
         email: student.email,
         yearGroup: student.yearGroup || yearGroup,
         classList: classList,
         id: entraId,
         fullName: fullName
-      });
+      };
+
+      // Validate student record before adding
+      canonicalStudents.push(validateStudentRecord(studentRecord));
     }
 
     // Log warnings

@@ -1,5 +1,7 @@
 import { FileValidationError } from '../../../shared/src/core/errors.js';
 import type { ParsedSpreadsheetData } from '../../../types/index.js';
+import { DataPreview, type PreviewData } from '../../../shared/src/utils/DataPreview.js';
+import { validateParsedSpreadsheetData } from '../../../shared/src/validation/schemas-browser.js';
 
 // Declare SheetJS types
 declare global {
@@ -87,7 +89,8 @@ export class SpreadsheetParser {
       }
     }
 
-    return { headers, rows, headerIndex };
+    const result = { headers, rows, headerIndex };
+    return validateParsedSpreadsheetData(result);
   }
 
   /**
@@ -167,7 +170,8 @@ export class SpreadsheetParser {
     const rows = data.slice(actualHeaderRow + 1);
     const headerIndex = new Map<string, number>(headers.map((h, i) => [h, i]));
 
-    return { headers, rows, headerIndex };
+    const result = { headers, rows, headerIndex };
+    return validateParsedSpreadsheetData(result);
   }
 
   /**
@@ -207,5 +211,42 @@ export class SpreadsheetParser {
         }
       );
     }
+  }
+
+  /**
+   * Generate a preview of parsed data
+   */
+  static generatePreview(
+    data: ParsedSpreadsheetData,
+    fileName: string,
+    maxRows: number = 5
+  ): PreviewData {
+    return DataPreview.generatePreview(data, fileName, maxRows);
+  }
+
+  /**
+   * Parse and preview a CSV file
+   */
+  static async parseAndPreviewCSV(
+    file: File,
+    requiredHeaders: string[] = [],
+    maxRows: number = 5
+  ): Promise<{ data: ParsedSpreadsheetData; preview: PreviewData }> {
+    const data = await this.parseCSV(file, requiredHeaders);
+    const preview = this.generatePreview(data, file.name, maxRows);
+    return { data, preview };
+  }
+
+  /**
+   * Parse and preview an XLSX file
+   */
+  static async parseAndPreviewXLSX(
+    file: File,
+    headerRow: number = 1,
+    maxRows: number = 5
+  ): Promise<{ data: ParsedSpreadsheetData; preview: PreviewData }> {
+    const data = await this.parseXLSX(file, headerRow);
+    const preview = this.generatePreview(data, file.name, maxRows);
+    return { data, preview };
   }
 }

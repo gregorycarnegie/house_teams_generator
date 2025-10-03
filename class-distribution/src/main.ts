@@ -2,8 +2,11 @@ import { AppState } from '../../shared/src/core/AppState.js';
 import { Logger } from '../../shared/src/utils/Logger.js';
 import { FileUploadCard } from '../../shared/src/ui/FileUploadCard.js';
 import { ClassDistributionGenerator } from './generators/ClassDistributionGenerator.js';
+import { SpreadsheetParser } from './parsers/SpreadsheetParser.js';
+import { DataPreview } from '../../shared/src/utils/DataPreview.js';
 import { TOOLS } from './config/tools.js';
 import type { ClassDistributionProcessingResult, GeneratedFile } from '../../types/index.js';
+import type { PreviewData } from '../../shared/src/utils/DataPreview.js';
 
 // Declare global types
 declare global {
@@ -21,6 +24,7 @@ class ClassDistributionApp {
   private generator: ClassDistributionGenerator;
   private fileCards: Map<string, FileUploadCard>;
   private toolConfig: typeof TOOLS.classDistribution;
+  private previews: Map<string, PreviewData>;
 
   constructor() {
     this.state = new AppState();
@@ -28,6 +32,7 @@ class ClassDistributionApp {
     this.generator = new ClassDistributionGenerator(this.logger);
     this.fileCards = new Map();
     this.toolConfig = TOOLS.classDistribution;
+    this.previews = new Map();
   }
 
   /**
@@ -52,6 +57,9 @@ class ClassDistributionApp {
 
     // Set up controls
     this.setupControls();
+
+    // Set up preview button
+    this.setupPreviewButton();
 
     // Set up state listeners
     this.setupStateListeners();
@@ -82,7 +90,12 @@ class ClassDistributionApp {
    * Set up file upload cards
    */
   private setupFileCards(): void {
+    console.log('Setting up file cards...');
+    console.log('Tool config:', this.toolConfig);
+
     const container = document.querySelector('.grid.inputs') as HTMLElement;
+    console.log('Container found:', container);
+
     if (!container) {
       console.error('File upload container not found');
       return;
@@ -92,14 +105,19 @@ class ClassDistributionApp {
     container.innerHTML = '';
 
     // Create file cards from config
+    console.log('Creating', this.toolConfig.files.length, 'file cards');
     for (const fileConfig of this.toolConfig.files) {
+      console.log('Creating card for:', fileConfig.id);
       const card = new FileUploadCard(fileConfig, (fileId: string, file: File | null) => {
         this.state.setFile(fileId, file);
       });
 
       this.fileCards.set(fileConfig.id, card);
-      container.appendChild(card.getElement());
+      const cardElement = card.getElement();
+      console.log('Card element:', cardElement);
+      container.appendChild(cardElement);
     }
+    console.log('File cards setup complete');
   }
 
   /**
@@ -132,12 +150,23 @@ class ClassDistributionApp {
   }
 
   /**
+   * Set up preview button
+   */
+  private setupPreviewButton(): void {
+    const previewBtn = document.getElementById('previewData') as HTMLButtonElement;
+    if (previewBtn) {
+      previewBtn.addEventListener('click', () => this.handlePreview());
+    }
+  }
+
+  /**
    * Set up state listeners for reactive updates
    */
   private setupStateListeners(): void {
     // Listen for file changes
     this.state.subscribe('fileChanged', () => {
       this.updateGenerateButton();
+      this.updatePreviewButton();
     });
 
     // Listen for config changes
@@ -157,7 +186,7 @@ class ClassDistributionApp {
   private updateGenerateButton(): void {
     const hasAllFiles = this.state.hasAllFiles();
     const tagsInput = this.state.getConfig('classTagFilters');
-    const hasTags = tagsInput && tagsInput.trim().length > 0;
+    const hasTags = tagsInput && typeof tagsInput === 'string' && tagsInput.trim().length > 0;
 
     const canGenerate = hasAllFiles && hasTags;
 
@@ -192,6 +221,100 @@ class ClassDistributionApp {
 
     if (statusText) {
       statusText.textContent = message;
+    }
+  }
+
+  /**
+   * Update preview button state
+   */
+  private updatePreviewButton(): void {
+    const hasAllFiles = this.state.hasAllFiles();
+    const previewBtn = document.getElementById('previewData') as HTMLButtonElement;
+
+    if (previewBtn) {
+      previewBtn.disabled = !hasAllFiles;
+    }
+  }
+
+  /**
+   * Handle preview button click
+   */
+  private async handlePreview(): Promise<void> {
+    const previewBtn = document.getElementById('previewData') as HTMLButtonElement;
+    const previewSection = document.getElementById('dataPreview') as HTMLElement;
+
+    if (previewBtn) {
+      previewBtn.disabled = true;
+      previewBtn.textContent = 'Loading...';
+    }
+
+    try {
+      const studentEmailsFile = this.state.getFile('studentEmails');
+      const studentClassListFile = this.state.getFile('studentClassList');
+      const entraAdFile = this.state.getFile('entraAd');
+
+      const previews: PreviewData[] = [];
+
+      // Parse and preview each file
+      if (studentEmailsFile) {
+        const { preview } = await SpreadsheetParser.parseAndPreviewXLSX(studentEmailsFile, 1);
+        previews.push(preview);
+        this.previews.set('studentEmails', preview);
+      }
+
+      if (studentClassListFile) {
+        const { preview } = await SpreadsheetParser.parseAndPreviewXLSX(studentClassListFile, 2);
+        previews.push(preview);
+        this.previews.set('studentClassList', preview);
+      }
+
+      if (entraAdFile) {
+        const { preview } = await SpreadsheetParser.parseAndPreviewCSV(entraAdFile, ['mail', 'id']);
+        previews.push(preview);
+        this.previews.set('entraAd', preview);
+      }
+
+      // Render previews
+      this.renderPreviews(previews);
+
+      // Show preview section
+      if (previewSection) {
+        previewSection.classList.remove('hidden');
+      }
+
+      this.logger.info(`Loaded previews for ${previews.length} file(s)`);
+    } catch (error: any) {
+      console.error('Preview error:', error);
+      this.logger.error(`Preview failed: ${error.message}`, error);
+    } finally {
+      if (previewBtn) {
+        previewBtn.disabled = false;
+        previewBtn.textContent = 'Preview Data';
+      }
+    }
+  }
+
+  /**
+   * Render data previews
+   */
+  private renderPreviews(previews: PreviewData[]): void {
+    const previewContainer = document.getElementById('previewContainer') as HTMLElement;
+    if (!previewContainer) return;
+
+    previewContainer.innerHTML = '';
+
+    // Add summary
+    const summaryHTML = DataPreview.generateSummary(previews);
+    const summaryDiv = document.createElement('div');
+    summaryDiv.innerHTML = summaryHTML;
+    previewContainer.appendChild(summaryDiv);
+
+    // Add each preview table
+    for (const preview of previews) {
+      const tableHTML = DataPreview.generateTableHTML(preview);
+      const tableDiv = document.createElement('div');
+      tableDiv.innerHTML = tableHTML;
+      previewContainer.appendChild(tableDiv);
     }
   }
 
@@ -362,12 +485,17 @@ class ClassDistributionApp {
 }
 
 // Initialize app when DOM is ready
+console.log('Script loaded, document.readyState:', document.readyState);
+
 if (document.readyState === 'loading') {
+  console.log('Waiting for DOMContentLoaded...');
   document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded fired, initializing app...');
     const app = new ClassDistributionApp();
     app.init();
   });
 } else {
+  console.log('DOM already ready, initializing app immediately...');
   const app = new ClassDistributionApp();
   app.init();
 }

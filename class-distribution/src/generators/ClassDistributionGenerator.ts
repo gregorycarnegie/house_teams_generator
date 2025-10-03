@@ -6,6 +6,11 @@ import type {
   ClassDistributionProcessingResult
 } from '../../../types/index.js';
 import type { Logger } from '../../../shared/src/utils/Logger.js';
+import {
+  validateProcessFiles,
+  validateProcessOptions,
+  validateProcessingResult
+} from '../../../shared/src/validation/schemas-browser.js';
 
 interface ProcessFiles {
   studentEmails: File;
@@ -35,6 +40,10 @@ export class ClassDistributionGenerator {
     files: ProcessFiles,
     options: ProcessOptions
   ): Promise<ClassDistributionProcessingResult> {
+    // Validate input parameters
+    validateProcessFiles(files);
+    validateProcessOptions(options);
+
     try {
       // Parse all files
       this.log('info', 'Reading student emails file...');
@@ -92,7 +101,7 @@ export class ClassDistributionGenerator {
       // Calculate stats
       const yearGroupStats = matcher.getYearGroupStats(filteredStudents);
 
-      return {
+      const result = {
         totalStudents: students.length,
         matched: students.length,
         filtered: filteredStudents.length,
@@ -100,6 +109,9 @@ export class ClassDistributionGenerator {
         files: generatedFiles,
         yearGroups: yearGroupStats
       };
+
+      // Validate result before returning
+      return validateProcessingResult(result);
 
     } catch (error) {
       this.log('error', `Processing failed: ${(error as Error).message}`, error);

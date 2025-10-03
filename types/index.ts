@@ -142,3 +142,13 @@ export interface ValidationFeedback {
   message: string;
   type: 'success' | 'error' | 'warning';
 }
+
+// ===== Data Preview Types =====
+
+export interface PreviewData {
+  fileName: string;
+  headers: string[];
+  rows: any[][];
+  totalRows: number;
+  previewRowCount: number;
+}

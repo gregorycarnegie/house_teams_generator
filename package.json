@@ -9,6 +9,8 @@
     "build:house-teams": "tsc -p house-teams/tsconfig.json",
     "build:watch": "tsc -p tsconfig.json --watch",
     "type-check": "tsc --noEmit",
+    "serve": "http-server . -p 8080 -o",
+    "serve:class": "http-server . -p 8080 -o /class-distribution/index.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -25,6 +27,10 @@
   "homepage": "https://github.com/gregorycarnegie/house_teams_generator#readme",
   "devDependencies": {
     "@types/node": "^24.6.1",
+    "http-server": "^14.1.1",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "zod": "^4.1.11"
   }
 }

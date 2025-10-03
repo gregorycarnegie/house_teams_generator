@@ -16,9 +16,9 @@ async function validateXLSX(file: File, headerRow: number): Promise<boolean> {
 /**
  * Validate CSV file
  */
-async function validateCSV(file: File): Promise<boolean> {
+async function validateCSV(file: File, requiredHeaders: string[] = []): Promise<boolean> {
   try {
-    await SpreadsheetParser.parseCSV(file);
+    await SpreadsheetParser.parseCSV(file, requiredHeaders);
     return true;
   } catch (error) {
     throw error;
@@ -84,7 +84,7 @@ export const TOOLS: ToolsConfig = {
         accept: '.csv,text/csv',
         description: 'CSV file with headers: "mail", "id"',
         requiredHeaders: ['mail', 'id'],
-        validator: (file: File) => validateCSV(file)
+        validator: (file: File) => validateCSV(file, ['mail', 'id'])
       }
     ],
     options: [
