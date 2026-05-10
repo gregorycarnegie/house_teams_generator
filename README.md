@@ -1,5 +1,11 @@
 # House Teams Generator
 
+[![Deploy to GitHub Pages](https://github.com/gregorycarnegie/house_teams_generator/actions/workflows/deploy.yml/badge.svg)](https://github.com/gregorycarnegie/house_teams_generator/actions/workflows/deploy.yml)
+[![GitHub Pages](https://img.shields.io/badge/live-GitHub%20Pages-blue?logo=github)](https://gregorycarnegie.github.io/house_teams_generator/)
+[![Rust](https://img.shields.io/badge/language-Rust-orange?logo=rust)](https://www.rust-lang.org/)
+[![WebAssembly](https://img.shields.io/badge/runtime-WebAssembly-654FF0?logo=webassembly)](https://webassembly.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 A browser-based suite of tools for generating Microsoft Entra ID distribution group CSV files from Bromcom student data exports. Built with Rust + Leptos, compiled to WebAssembly, and statically hosted on GitHub Pages.
 
 All processing happens entirely in the browser — no data leaves your machine.
