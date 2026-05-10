@@ -1,262 +1,105 @@
 # House Teams Generator
 
-A collection of tools for generating Microsoft Entra ID distribution group CSV files based on student data exports from Bromcom.
+A browser-based suite of tools for generating Microsoft Entra ID distribution group CSV files from Bromcom student data exports. Built with Rust + Leptos, compiled to WebAssembly, and statically hosted on GitHub Pages.
 
-## 🚀 Quick Start
+All processing happens entirely in the browser — no data leaves your machine.
 
-### Build the Project
+## Tools
 
-```bash
-npm install
-npm run build
-```
+### House & Year Teams Generator
 
-### Use the Tools
+Upload a Bromcom CSV export and an Entra ID CSV export. Matches students by email address and generates one Entra ID import CSV per house/year combination.
 
-Open either tool in a browser:
+Required columns:
 
-- **Class Distribution:** [class-distribution/index.html](class-distribution/index.html)
-- **House Teams:** [house-teams/index.html](house-teams/index.html)
+- Bromcom: `House(s)`, `Student email`, `Year Group Name`
+- Entra ID: `mail`, `id`
 
-## 🛠️ Tools
+### Class Distribution Group Generator
 
-### 1. Class Distribution Group Generator
+Upload a Bromcom Student Emails XLSX, a Bromcom Class List XLSX, and an Entra ID CSV. Filter students by class tags (e.g. `MA`, `EN`, `SC`) and optionally split output by year group.
 
-Generate Entra ID distribution group CSVs filtered by class tags.
+Required columns:
 
-**Location:** `class-distribution/`
+- Student Emails XLSX: `Admission Number`, `Student email`, `Year Group Name`
+- Class List XLSX: `AdmissionNo`, `StudentClassList`, `StudentYearGroup`, `StudentFullName`
+- Entra ID CSV: `mail`, `id`
 
-**Features:**
+## Output Format
 
-- Filter students by class tags (e.g., MAT, SCI, ENG)
-- Group by year groups (optional)
-- Export multiple CSV files at once
-
-**Required Files:**
-
-- Bromcom Student Emails Report (XLSX)
-- Bromcom Student Class List (XLSX)
-- Entra ID Export (CSV)
-
-[📖 Read more](class-distribution/README.md)
-
-### 2. House & Year Entra ID CSV Builder
-
-Generate Entra ID CSV files grouped by house and year.
-
-**Location:** `house-teams/`
-
-**Features:**
-
-- Automatic grouping by house and year
-- Save all CSVs to a folder (recommended)
-- Individual download support
-
-**Required Files:**
-
-- Bromcom Export with House(s), Student email, Year Group Name (CSV)
-- Entra ID Export with id and mail (CSV)
-
-[📖 Read more](house-teams/README.md)
-
-## 💻 Technology Stack
-
-### TypeScript
-
-- **Full TypeScript integration** with strict mode
-- Type-safe code across all modules
-- Comprehensive type definitions in `types/index.ts`
-
-### Modern JavaScript (ES2020)
-
-- ES6 modules with import/export
-- Component-based UI architecture
-- Observer pattern for state management
-
-### Libraries
-
-- **SheetJS (xlsx)** - Excel file parsing (class-distribution only)
-- Native File APIs - File reading and CSV export
-
-## 📁 Project Structure
+All tools produce CSVs in the Entra ID bulk import format:
 
 ```text
-house_teams_generator/
-├── types/
-│   └── index.ts                 # Shared type definitions
-│
-├── shared/                      # Shared code library
-│   ├── src/                     # Shared TypeScript modules
-│   │   ├── core/               # errors.ts, AppState.ts
-│   │   ├── ui/                 # FileUploadCard.ts
-│   │   └── utils/              # Logger.ts
-│   ├── icons/                   # Shared icons
-│   └── styles/                  # Shared styles
-│
-├── class-distribution/          # Class distribution tool
-│   ├── src/                     # TypeScript source files
-│   │   ├── config/              # tools.ts
-│   │   ├── core/                # DataMatcher.ts
-│   │   ├── generators/          # ClassDistributionGenerator.ts
-│   │   ├── parsers/             # SpreadsheetParser.ts
-│   │   └── main.ts              # Entry point
-│   ├── dist/                    # Compiled JavaScript (git-ignored)
-│   ├── index.html               # Tool UI
-│   ├── tsconfig.json            # TypeScript configuration
-│   ├── ARCHITECTURE.md          # Architecture documentation
-│   └── README.md                # Tool documentation
-│
-├── house-teams/                 # House teams tool
-│   ├── src/                     # TypeScript source files
-│   │   ├── config/              # tools.ts
-│   │   ├── core/                # DataMatcher.ts
-│   │   ├── generators/          # HouseTeamsGenerator.ts
-│   │   ├── parsers/             # SpreadsheetParser.ts
-│   │   └── main.ts              # Entry point
-│   ├── dist/                    # Compiled JavaScript (git-ignored)
-│   ├── index.html               # Tool UI
-│   ├── tsconfig.json            # TypeScript configuration
-│   └── README.md                # Tool documentation
-│
-├── package.json                 # Dependencies and build scripts
-├── tsconfig.json                # Root TypeScript configuration
-└── README.md                    # This file
-```
-
-## 🔧 Development
-
-### Build Commands
-
-```bash
-# Build both tools
-npm run build
-
-# Build specific tool
-npm run build:class-distribution
-npm run build:house-teams
-
-# Watch mode (auto-rebuild)
-npm run build:watch
-
-# Type-check only
-npm run type-check
-```
-
-### Making Changes
-
-1. Edit TypeScript files in `*/src/`
-2. Run `npm run build`
-3. Test in browser by opening `index.html`
-4. Commit only TypeScript source files (`.ts`)
-
-### Adding New Features
-
-1. Update type definitions in `types/index.ts` if needed
-2. Implement feature in appropriate module
-3. Update tool configuration if needed
-4. Build and test
-
-## 📖 Documentation
-
-- [**Class Distribution README**](class-distribution/README.md) - Class distribution tool documentation
-- [**House Teams README**](house-teams/README.md) - House teams tool documentation
-- [**Architecture Guide**](class-distribution/ARCHITECTURE.md) - Detailed architecture patterns
-
-## 🏗️ Architecture
-
-### Modular Design
-
-- **Core modules:** State management, error handling, data matching
-- **Parsers:** CSV and XLSX file parsing
-- **Generators:** CSV file generation with proper formatting
-- **UI components:** Reusable file upload cards
-- **Configuration:** Tool-specific settings and validation
-
-### Shared Library (`shared/src/`)
-
-4 modules imported by both tools (eliminating code duplication):
-
-- `core/errors.ts` - Custom error classes with user-friendly messages
-- `core/AppState.ts` - State management with observer pattern
-- `ui/FileUploadCard.ts` - Drag-and-drop file upload component
-- `utils/Logger.ts` - Logging utility with multiple log levels
-
-**Benefits:** Zero code duplication, single source of truth, easier maintenance
-
-### Type Safety
-
-- 120 lines of shared type definitions
-- Strict TypeScript mode enabled
-- Full IDE autocomplete support
-
-## 🎯 Features
-
-### Common Features
-
-- ✅ Drag-and-drop file upload
-- ✅ Real-time file validation
-- ✅ Progress logging
-- ✅ Detailed error messages
-- ✅ Missing student tracking
-- ✅ Statistics dashboard
-
-### Class Distribution Specific
-
-- ✅ Class tag filtering (substring match, case-insensitive)
-- ✅ Year group mode (separate CSVs per year)
-- ✅ XLSX file support
-- ✅ Multiple file export
-
-### House Teams Specific
-
-- ✅ Automatic house/year grouping
-- ✅ Save to folder (File System Access API)
-- ✅ CSV-only workflow
-- ✅ Bulk file export
-
-## 📝 Output Format
-
-All tools generate CSVs in the Entra ID bulk import format:
-
-```csv
 version:v1.0
 Member object ID or user principal name [memberObjectIdOrUpn] Required
 Example: 9832aad8-e4fe-496b-a604-95c6ef01ae75
 <entra-id-1>
 <entra-id-2>
-<entra-id-3>
 ...
 ```
 
-## 🔍 Browser Compatibility
+## Development
 
-- **Chrome/Edge:** ✅ Full support (recommended)
-- **Firefox:** ✅ Full support
-- **Safari:** ⚠️ Limited (no File System Access API for house-teams)
+### Prerequisites
 
-## 🤝 Contributing
+- [Rust](https://rustup.rs/) (stable toolchain)
+- `wasm32-unknown-unknown` target: `rustup target add wasm32-unknown-unknown`
+- [Trunk](https://trunkrs.dev/): `cargo install trunk`
 
-This is a school internal tool. For changes:
+### Run locally
 
-1. Create a feature branch
-2. Make changes to TypeScript files
-3. Build and test thoroughly
-4. Create pull request with clear description
+```bash
+trunk serve
+```
 
-## 📜 License
+Opens at `http://localhost:8080`.
 
-Internal use only - Harrow School
+### Run tests
 
-## 🆘 Support
+```bash
+cargo test --workspace
+```
 
-For issues or questions:
+The `common` crate (pure Rust) is tested natively; the `app` crate (Leptos WASM) has no unit tests.
 
-- Check the documentation in `docs/`
-- Review the tool-specific README files
-- Contact the development team
+### Production build
 
----
+```bash
+trunk build --release --public-url /house_teams_generator/
+```
 
-**Version:** 2.0.0 (TypeScript)
-**Last Updated:** January 2025
-**Status:** ✅ Production Ready
+Output is in `dist/`.
+
+## Project Structure
+
+```text
+house_teams_generator/
+├── common/          # Pure-Rust logic (parsers, processors) — testable natively
+│   └── src/
+│       ├── csv_parser.rs
+│       ├── xlsx_parser.rs
+│       ├── house_teams.rs
+│       ├── class_distribution.rs
+│       ├── types.rs
+│       └── errors.rs
+├── app/             # Leptos WASM frontend
+│   ├── src/
+│   │   ├── app.rs
+│   │   ├── file_io.rs
+│   │   ├── types.rs
+│   │   ├── components/
+│   │   │   └── file_upload.rs
+│   │   └── pages/
+│   │       ├── home.rs
+│   │       ├── house_teams.rs
+│   │       └── class_distribution.rs
+│   ├── index.html
+│   └── styles.css
+├── Trunk.toml
+├── Cargo.toml
+└── .github/workflows/deploy.yml
+```
+
+## Deployment
+
+Pushes to `main` automatically build and deploy to GitHub Pages via the Actions workflow in `.github/workflows/deploy.yml`. The live URL is `https://<org>.github.io/house_teams_generator/`.
