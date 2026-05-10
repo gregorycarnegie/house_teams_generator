@@ -1,7 +1,5 @@
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
 pub struct FileData {
-    pub name: String,
     pub bytes: Vec<u8>,
 }
 

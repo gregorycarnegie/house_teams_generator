@@ -75,8 +75,8 @@ pub fn FileUploadCard(
         };
         match validation {
             Ok(()) => {
-                file_status.set(FileStatus::Ready(name.clone()));
-                on_file.set(Some(FileData { name, bytes }));
+                file_status.set(FileStatus::Ready(name));
+                on_file.set(Some(FileData { bytes }));
             }
             Err(msg) => {
                 file_status.set(FileStatus::Error(msg));
@@ -98,10 +98,10 @@ pub fn FileUploadCard(
 
     let on_change = move |ev: web_sys::Event| {
         let input: web_sys::HtmlInputElement = ev.target().unwrap().dyn_into().unwrap();
-        if let Some(files) = input.files() {
-            if let Some(file) = files.get(0) {
-                handle_file(file);
-            }
+        if let Some(files) = input.files()
+            && let Some(file) = files.get(0)
+        {
+            handle_file(file);
         }
     };
 
@@ -111,12 +111,11 @@ pub fn FileUploadCard(
 
     let on_drop = move |ev: web_sys::DragEvent| {
         ev.prevent_default();
-        if let Some(dt) = ev.data_transfer() {
-            if let Some(files) = dt.files() {
-                if let Some(file) = files.get(0) {
-                    handle_file(file);
-                }
-            }
+        if let Some(dt) = ev.data_transfer()
+            && let Some(files) = dt.files()
+            && let Some(file) = files.get(0)
+        {
+            handle_file(file);
         }
     };
 
