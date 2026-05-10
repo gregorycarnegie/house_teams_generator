@@ -61,139 +61,163 @@ pub fn HouseTeamsPage(navigate: RwSignal<Page>) -> impl IntoView {
     };
 
     view! {
-        <div class="page">
-            <nav class="tool-nav">
-                <a href="#" class="tool-nav__link"
-                   on:click=move |ev| { ev.prevent_default(); navigate.set(Page::Home); }>
-                    "← Home"
-                </a>
-                <a href="#" class="tool-nav__link"
-                   on:click=move |ev| { ev.prevent_default(); navigate.set(Page::ClassDistribution); }>
-                    "Class Distribution Tool →"
-                </a>
-            </nav>
+        <div class="topbar">
+            <div class="topbar__inner">
+                <div class="logo" on:click=move |ev| { ev.prevent_default(); navigate.set(Page::Home); }>
+                    <div class="logo__mark"></div>
+                    <span>"entragen"</span>
+                    <span class="mono" style="color:var(--ink-4);font-size:0.82rem;font-weight:400">"v1.2.0"</span>
+                </div>
+                <nav class="nav">
+                    <a href="#" class="active always"
+                       on:click=move |ev| { ev.prevent_default(); navigate.set(Page::HouseTeams); }>
+                        "House Teams"
+                    </a>
+                    <a href="#" class="always"
+                       on:click=move |ev| { ev.prevent_default(); navigate.set(Page::ClassDistribution); }>
+                        "Class Distribution"
+                    </a>
+                </nav>
+                <div class="topbar__right">
+                    <a href="https://github.com/gregorycarnegie/house_teams_generator" target="_blank" class="btn-sm">
+                        "GitHub ↗"
+                    </a>
+                </div>
+            </div>
+        </div>
 
-            <header class="hero">
-                <span class="hero__tag">"Offline utility"</span>
-                <h1>"House & Year Entra ID CSV Builder"</h1>
-                <p>"All processing happens locally in your browser. Works offline. No data is uploaded anywhere."</p>
-            </header>
+        <div class="tool-wrap">
+            <div class="page-header">
+                <button class="page-header__back"
+                    on:click=move |_| navigate.set(Page::Home)>
+                    "← home"
+                </button>
+                <h1>"House & Year Teams"</h1>
+                <p>"Match Bromcom students to Entra ID accounts and emit one CSV per house × year combination. All processing happens in your browser."</p>
+            </div>
 
-            <main class="layout">
-                <section class="panel">
-                    <div class="panel__header">
-                        <h2>"1. Provide the source exports"</h2>
-                        <p class="hint">"Drop each file or use the pickers."</p>
-                    </div>
-                    <div class="grid inputs">
-                        <FileUploadCard
-                            label="Bromcom Export"
-                            badge="CSV"
-                            description="Required columns: House(s), Student email, Year Group Name"
-                            accept=".csv"
-                            required_cols=&["House(s)", "Student email", "Year Group Name"]
-                            is_xlsx=false
-                            on_file=bromcom_file.write_only()
-                            file_status=bromcom_status
-                        />
-                        <FileUploadCard
-                            label="Entra ID Export"
-                            badge="CSV"
-                            description="Required columns: id, mail"
-                            accept=".csv"
-                            required_cols=&["id", "mail"]
-                            is_xlsx=false
-                            on_file=entra_file.write_only()
-                            file_status=entra_status
-                        />
-                    </div>
-                </section>
+            <div class="panel">
+                <div class="panel__num">"01"</div>
+                <div class="panel__head">
+                    <h2>"Source files"</h2>
+                    <p>"Drop each file or click to browse."</p>
+                </div>
+                <div class="upload-grid">
+                    <FileUploadCard
+                        label="Bromcom Export"
+                        badge="CSV"
+                        description="Required: House(s), Student email, Year Group Name"
+                        accept=".csv"
+                        required_cols=&["House(s)", "Student email", "Year Group Name"]
+                        is_xlsx=false
+                        on_file=bromcom_file.write_only()
+                        file_status=bromcom_status
+                    />
+                    <FileUploadCard
+                        label="Entra ID Export"
+                        badge="CSV"
+                        description="Required: id, mail"
+                        accept=".csv"
+                        required_cols=&["id", "mail"]
+                        is_xlsx=false
+                        on_file=entra_file.write_only()
+                        file_status=entra_status
+                    />
+                </div>
+            </div>
 
-                <section class="panel">
-                    <div class="panel__header">
-                        <h2>"2. Generate CSVs"</h2>
-                    </div>
-                    <div class="controls">
-                        <button
-                            disabled=move || !can_generate() || processing.get()
-                            on:click=on_generate
-                        >
-                            {move || if processing.get() { "Generating…" } else { "Generate CSVs" }}
-                        </button>
-                        <span class="status-text hint">
-                            {move || if can_generate() { "Ready — click to generate." } else { "Select both files to enable." }}
-                        </span>
-                    </div>
-                    {move || error_msg.get().map(|msg| view! {
-                        <p class="bad" style="margin-top:12px">{msg}</p>
-                    })}
-                </section>
+            <div class="panel">
+                <div class="panel__num">"02"</div>
+                <div class="panel__head">
+                    <h2>"Generate"</h2>
+                </div>
+                <div class="controls">
+                    <button
+                        class="btn-generate"
+                        disabled=move || !can_generate() || processing.get()
+                        on:click=on_generate
+                    >
+                        {move || if processing.get() { "Generating…" } else { "Generate CSVs" }}
+                    </button>
+                    <span class="status-hint">
+                        {move || if can_generate() { "Ready — click to generate." } else { "Select both files to enable." }}
+                    </span>
+                </div>
+                {move || error_msg.get().map(|msg| view! {
+                    <div class="error-msg">{msg}</div>
+                })}
+            </div>
 
-                {move || result.get().map(|r| {
-                    let HouseTeamsResult { processed, matched, missing_count, group_count, files, missing } = r;
-                    let has_missing = !missing.is_empty();
-                    let files_len = files.len();
-                    view! {
-                        <section class="panel">
-                            <div class="panel__header">
-                                <h2>"3. Review summary"</h2>
+            {move || result.get().map(|r| {
+                let HouseTeamsResult { processed, matched, missing_count, group_count, files, missing } = r;
+                let has_missing = !missing.is_empty();
+                let files_len = files.len();
+                view! {
+                    <div class="panel">
+                        <div class="panel__num">"03"</div>
+                        <div class="panel__head">
+                            <h2>"Results"</h2>
+                        </div>
+
+                        <div class="stats-strip">
+                            <div class="stat-cell">
+                                <div class="stat-cell__val">{processed}</div>
+                                <div class="stat-cell__lbl">"Processed"</div>
                             </div>
-
-                            <div class="stats-row">
-                                <div class="stat-card">
-                                    <span class="stat-card__label">"Processed"</span>
-                                    <span class="stat-card__value">{processed}</span>
-                                </div>
-                                <div class="stat-card">
-                                    <span class="stat-card__label">"Matched"</span>
-                                    <span class="stat-card__value">{matched}</span>
-                                </div>
-                                <div class="stat-card">
-                                    <span class="stat-card__label">"Missing"</span>
-                                    <span class="stat-card__value">{missing_count}</span>
-                                </div>
-                                <div class="stat-card">
-                                    <span class="stat-card__label">"House-Year groups"</span>
-                                    <span class="stat-card__value">{group_count}</span>
-                                </div>
-                                <div class="stat-card">
-                                    <span class="stat-card__label">"CSV files"</span>
-                                    <span class="stat-card__value">{files_len}</span>
-                                </div>
+                            <div class="stat-cell">
+                                <div class="stat-cell__val">{matched}</div>
+                                <div class="stat-cell__lbl">"Matched"</div>
                             </div>
-
-                            <div class="download-panel">
-                                <h3 class="download-panel__title">"Generated CSV files"</h3>
-                                <div class="list">
-                                    {files.into_iter().map(|f| {
-                                        let name = f.name.clone();
-                                        let content = f.content.clone();
-                                        let count = f.count;
-                                        view! {
-                                            <a href="#" class="linklike"
-                                               on:click=move |ev| {
-                                                   ev.prevent_default();
-                                                   trigger_download(&name, &content);
-                                               }>
-                                                {f.name} " (" {count} " IDs)"
-                                            </a>
-                                        }
-                                    }).collect_view()}
-                                </div>
+                            <div class="stat-cell">
+                                <div class="stat-cell__val">{missing_count}</div>
+                                <div class="stat-cell__lbl">"Unmatched"</div>
                             </div>
+                            <div class="stat-cell">
+                                <div class="stat-cell__val">{group_count}</div>
+                                <div class="stat-cell__lbl">"Groups"</div>
+                            </div>
+                            <div class="stat-cell">
+                                <div class="stat-cell__val">{files_len}</div>
+                                <div class="stat-cell__lbl">"CSV files"</div>
+                            </div>
+                        </div>
 
-                            {has_missing.then(|| view! {
-                                <details class="report-block">
-                                    <summary>
-                                        <b>"Missing matches report"</b>
-                                        <span class="hint">" Unmatched emails and reasons"</span>
-                                    </summary>
+                        <div class="download-panel">
+                            <h3>"Generated CSV files"</h3>
+                            <div class="download-list">
+                                {files.into_iter().map(|f| {
+                                    let name = f.name.clone();
+                                    let content = f.content.clone();
+                                    let count = f.count;
+                                    view! {
+                                        <a href="#" class="download-item"
+                                           on:click=move |ev| {
+                                               ev.prevent_default();
+                                               trigger_download(&name, &content);
+                                           }>
+                                            {f.name}
+                                            <span class="download-item__count">{count} " IDs"</span>
+                                        </a>
+                                    }
+                                }).collect_view()}
+                            </div>
+                        </div>
+
+                        {has_missing.then(|| view! {
+                            <details class="report-block">
+                                <summary>
+                                    <b>"Missing matches"</b>
+                                    <span class="hint">" — unmatched emails and reasons"</span>
+                                </summary>
+                                <div class="report-block__body">
                                     <div class="table-shell table-shell--tall">
                                         <table>
                                             <thead>
                                                 <tr>
-                                                    <th>"#"</th><th>"Student email"</th>
-                                                    <th>"Reason"</th><th>"Details"</th>
+                                                    <th>"#"</th>
+                                                    <th>"Student email"</th>
+                                                    <th>"Reason"</th>
+                                                    <th>"Details"</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -202,26 +226,26 @@ pub fn HouseTeamsPage(navigate: RwSignal<Page>) -> impl IntoView {
                                                         <td>{i + 1}</td>
                                                         <td>{m.email}</td>
                                                         <td class="warn">{m.reason}</td>
-                                                        <td class="hint">{format!("{} / {}", m.house, m.year)}</td>
+                                                        <td class="ok" style="color:var(--ink-3)">{format!("{} / {}", m.house, m.year)}</td>
                                                     </tr>
                                                 }).collect_view()}
                                             </tbody>
                                         </table>
                                     </div>
-                                </details>
-                            })}
-                        </section>
-                    }
-                })}
-            </main>
+                                </div>
+                            </details>
+                        })}
+                    </div>
+                }
+            })}
 
-            <footer class="footnote">
-                <p class="hint small">
-                    "Output CSV format: "
-                    <code>"version:v1.0"</code>
-                    " followed by one Entra " <code>"id"</code> " per line."
-                </p>
-            </footer>
+            <div class="tool-footer">
+                "Output: "
+                <code>"version:v1.0"</code>
+                " header, then one Entra "
+                <code>"id"</code>
+                " per line."
+            </div>
         </div>
     }
 }

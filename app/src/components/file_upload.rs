@@ -18,7 +18,6 @@ async fn read_file_bytes(file: &web_sys::File) -> Result<Vec<u8>, String> {
     let reader =
         web_sys::FileReader::new().map_err(|e| format!("FileReader init failed: {e:?}"))?;
 
-    // Build a Promise that resolves when onload fires
     let reader_for_closure = reader.clone();
     let promise = js_sys::Promise::new(&mut move |resolve, reject| {
         let r = reader_for_closure.clone();
@@ -123,36 +122,32 @@ pub fn FileUploadCard(
 
     view! {
         <div class="upload-card">
-            <div class="upload-card__meta">
-                <div class="upload-card__header">
-                    <h3>{label}</h3>
-                </div>
+            <div class="upload-card__header">
+                <span class="upload-card__label">{label}</span>
                 <span class="upload-card__badge">{badge}</span>
-                <p class="upload-card__description hint">{description}</p>
             </div>
+            <p class="upload-card__desc">{description}</p>
             <div
                 class="file-picker"
+                class:ready=move || matches!(file_status.get(), FileStatus::Ready(_))
+                class:error=move || matches!(file_status.get(), FileStatus::Error(_))
                 on:dragover=on_dragover
                 on:drop=on_drop
             >
-                <input
-                    type="file"
-                    accept=accept
-                    on:change=on_change
-                />
+                <input type="file" accept=accept on:change=on_change />
                 {move || match file_status.get() {
                     FileStatus::Idle => view! {
-                        <span class="file-picker__title">"Drop file or click to browse"</span>
+                        <span class="file-picker__idle">"Drop or click to browse"</span>
                         <span class="file-picker__formats">{accept}</span>
                     }.into_any(),
                     FileStatus::Loading => view! {
-                        <span class="file-picker__title">"Reading…"</span>
+                        <span class="file-picker__idle">"Reading…"</span>
                     }.into_any(),
                     FileStatus::Ready(name) => view! {
-                        <span class="file-picker__title ok">"✓ " {name}</span>
+                        <span class="file-picker__ok">"✓ " {name}</span>
                     }.into_any(),
                     FileStatus::Error(msg) => view! {
-                        <span class="file-picker__title bad">"⚠ " {msg}</span>
+                        <span class="file-picker__err">"✗ " {msg}</span>
                     }.into_any(),
                 }}
             </div>

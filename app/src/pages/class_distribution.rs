@@ -94,198 +94,229 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
     };
 
     view! {
-        <div class="page">
-            <nav class="tool-nav">
-                <a href="#" class="tool-nav__link"
-                   on:click=move |ev| { ev.prevent_default(); navigate.set(Page::Home); }>
-                    "← Home"
-                </a>
-                <a href="#" class="tool-nav__link"
-                   on:click=move |ev| { ev.prevent_default(); navigate.set(Page::HouseTeams); }>
-                    "House Teams Tool →"
-                </a>
-            </nav>
+        <div class="topbar">
+            <div class="topbar__inner">
+                <div class="logo" on:click=move |ev| { ev.prevent_default(); navigate.set(Page::Home); }>
+                    <div class="logo__mark"></div>
+                    <span>"entragen"</span>
+                    <span class="mono" style="color:var(--ink-4);font-size:0.82rem;font-weight:400">"v1.2.0"</span>
+                </div>
+                <nav class="nav">
+                    <a href="#" class="always"
+                       on:click=move |ev| { ev.prevent_default(); navigate.set(Page::HouseTeams); }>
+                        "House Teams"
+                    </a>
+                    <a href="#" class="active always"
+                       on:click=move |ev| { ev.prevent_default(); navigate.set(Page::ClassDistribution); }>
+                        "Class Distribution"
+                    </a>
+                </nav>
+                <div class="topbar__right">
+                    <a href="https://github.com/gregorycarnegie/house_teams_generator" target="_blank" class="btn-sm">
+                        "GitHub ↗"
+                    </a>
+                </div>
+            </div>
+        </div>
 
-            <header class="hero">
-                <span class="hero__tag">"Offline utility"</span>
-                <h1>"Class Distribution Group Generator"</h1>
-                <p>"Generate Entra ID distribution group CSVs based on class tags. All processing happens locally in your browser."</p>
-            </header>
+        <div class="tool-wrap">
+            <div class="page-header">
+                <button class="page-header__back"
+                    on:click=move |_| navigate.set(Page::Home)>
+                    "← home"
+                </button>
+                <h1>"Class Distribution Groups"</h1>
+                <p>"Generate Entra ID distribution group CSVs filtered by class tags. Three-source pipeline — all processed locally in your browser."</p>
+            </div>
 
-            <main class="layout">
-                <section class="panel">
-                    <div class="panel__header">
-                        <h2>"1. Provide source files"</h2>
-                        <p class="hint">"Upload the three required files."</p>
-                    </div>
-                    <div class="grid inputs">
-                        <FileUploadCard
-                            label="Student Emails"
-                            badge="XLSX"
-                            description="Required: Admission Number, Year Group Name, Student email"
-                            accept=".xlsx,.xls"
-                            required_cols=&["Admission Number", "Year Group Name", "Student email"]
-                            is_xlsx=true
-                            on_file=emails_file.write_only()
-                            file_status=emails_status
+            <div class="panel">
+                <div class="panel__num">"01"</div>
+                <div class="panel__head">
+                    <h2>"Source files"</h2>
+                    <p>"Upload the three required files."</p>
+                </div>
+                <div class="upload-grid">
+                    <FileUploadCard
+                        label="Student Emails"
+                        badge="XLSX"
+                        description="Required: Admission Number, Year Group Name, Student email"
+                        accept=".xlsx,.xls"
+                        required_cols=&["Admission Number", "Year Group Name", "Student email"]
+                        is_xlsx=true
+                        on_file=emails_file.write_only()
+                        file_status=emails_status
+                    />
+                    <FileUploadCard
+                        label="Student Class List"
+                        badge="XLSX"
+                        description="Required: StudentFullName, StudentYearGroup, StudentClassList, AdmissionNo"
+                        accept=".xlsx,.xls"
+                        required_cols=&["StudentFullName", "StudentYearGroup", "StudentClassList", "AdmissionNo"]
+                        is_xlsx=true
+                        on_file=class_file.write_only()
+                        file_status=class_status
+                    />
+                    <FileUploadCard
+                        label="Entra ID Export"
+                        badge="CSV"
+                        description="Required: mail, id"
+                        accept=".csv"
+                        required_cols=&["mail", "id"]
+                        is_xlsx=false
+                        on_file=entra_file.write_only()
+                        file_status=entra_status
+                    />
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel__num">"02"</div>
+                <div class="panel__head">
+                    <h2>"Configure"</h2>
+                    <p>"Enter class tags to filter by, then choose whether to split by year group."</p>
+                </div>
+                <div class="controls-grid">
+                    <div class="control-group control-group--wide">
+                        <label for="classTagFilters">"Class tag filters"</label>
+                        <textarea
+                            id="classTagFilters"
+                            rows="3"
+                            placeholder="Enter class tags (one per line or space-separated)\nExample: MAT MAF SCI"
+                            on:input=move |ev| {
+                                let el: web_sys::HtmlInputElement =
+                                    ev.target().unwrap().dyn_into().unwrap();
+                                tags_input.set(el.value());
+                            }
+                            prop:value=move || tags_input.get()
                         />
-                        <FileUploadCard
-                            label="Student Class List"
-                            badge="XLSX"
-                            description="Required: StudentFullName, StudentYearGroup, StudentClassList, AdmissionNo"
-                            accept=".xlsx,.xls"
-                            required_cols=&["StudentFullName", "StudentYearGroup", "StudentClassList", "AdmissionNo"]
-                            is_xlsx=true
-                            on_file=class_file.write_only()
-                            file_status=class_status
-                        />
-                        <FileUploadCard
-                            label="Entra ID Export"
-                            badge="CSV"
-                            description="Required columns: mail, id"
-                            accept=".csv"
-                            required_cols=&["mail", "id"]
-                            is_xlsx=false
-                            on_file=entra_file.write_only()
-                            file_status=entra_status
-                        />
-                    </div>
-                </section>
-
-                <section class="panel">
-                    <div class="panel__header">
-                        <h2>"2. Configure filters and output"</h2>
-                        <p class="hint">"Enter class tags to filter students and choose whether to split by year group."</p>
-                    </div>
-                    <div class="controls-grid">
-                        <div class="control-group control-group--wide">
-                            <label for="classTagFilters">"Class tag filters"</label>
-                            <textarea
-                                id="classTagFilters"
-                                rows="3"
-                                placeholder="Enter class tags (one per line or space-separated)\nExample: MAT MAF SCI"
-                                on:input=move |ev| {
-                                    let el: web_sys::HtmlInputElement =
-                                        ev.target().unwrap().dyn_into().unwrap();
-                                    tags_input.set(el.value());
-                                }
-                                prop:value=move || tags_input.get()
-                            />
-                            <span class="hint small">
-                                "Students are included if their StudentClassList contains ANY of these tags (substring match, case-insensitive)"
-                            </span>
-                        </div>
-
-                        <div class="control-group">
-                            <label class="checkbox-label">
-                                <input
-                                    type="checkbox"
-                                    prop:checked=move || yeargroup_mode.get()
-                                    on:change=move |ev| {
-                                        let el: web_sys::HtmlInputElement =
-                                            ev.target().unwrap().dyn_into().unwrap();
-                                        yeargroup_mode.set(el.checked());
-                                    }
-                                />
-                                " Yeargroup mode"
-                            </label>
-                            <span class="hint small">"Creates separate CSV files for each year group"</span>
-                        </div>
-
-                        <button
-                            disabled=move || !can_generate() || processing.get()
-                            on:click=on_generate
-                        >
-                            {move || if processing.get() { "Generating…" } else { "Generate Distribution Group CSV(s)" }}
-                        </button>
-
-                        <span class="status-text hint">
-                            {move || {
-                                if !all_files_ready() { "Select all three files to continue." }
-                                else if !tags_non_empty() { "Enter at least one class tag to enable." }
-                                else { "Ready — click to generate." }
-                            }}
+                        <span class="status-hint">
+                            "Students included if their class list contains ANY tag (substring, case-insensitive)"
                         </span>
                     </div>
-                    {move || error_msg.get().map(|msg| view! {
-                        <p class="bad" style="margin-top:12px">{msg}</p>
-                    })}
-                </section>
 
-                {move || result.get().map(|r| {
-                    let ClassDistResult { total, matched, filtered, with_id, files, year_groups, warnings } = r;
-                    let has_warnings = !warnings.is_empty();
-                    let has_year_groups = !year_groups.is_empty();
-                    let files_len = files.len();
-                    view! {
-                        <section class="panel">
-                            <div class="panel__header">
-                                <h2>"3. Summary and downloads"</h2>
+                    <div class="control-group">
+                        <label class="checkbox-label">
+                            <input
+                                type="checkbox"
+                                prop:checked=move || yeargroup_mode.get()
+                                on:change=move |ev| {
+                                    let el: web_sys::HtmlInputElement =
+                                        ev.target().unwrap().dyn_into().unwrap();
+                                    yeargroup_mode.set(el.checked());
+                                }
+                            />
+                            " Year group mode"
+                        </label>
+                        <span class="status-hint">"Creates separate CSV files for each year group"</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel__num">"03"</div>
+                <div class="panel__head">
+                    <h2>"Generate"</h2>
+                </div>
+                <div class="controls">
+                    <button
+                        class="btn-generate"
+                        disabled=move || !can_generate() || processing.get()
+                        on:click=on_generate
+                    >
+                        {move || if processing.get() { "Generating…" } else { "Generate CSV(s)" }}
+                    </button>
+                    <span class="status-hint">
+                        {move || {
+                            if !all_files_ready() { "Select all three files to continue." }
+                            else if !tags_non_empty() { "Enter at least one class tag." }
+                            else { "Ready — click to generate." }
+                        }}
+                    </span>
+                </div>
+                {move || error_msg.get().map(|msg| view! {
+                    <div class="error-msg">{msg}</div>
+                })}
+            </div>
+
+            {move || result.get().map(|r| {
+                let ClassDistResult { total, matched, filtered, with_id, files, year_groups, warnings } = r;
+                let has_warnings = !warnings.is_empty();
+                let has_year_groups = !year_groups.is_empty();
+                let files_len = files.len();
+                view! {
+                    <div class="panel">
+                        <div class="panel__num">"04"</div>
+                        <div class="panel__head">
+                            <h2>"Results"</h2>
+                        </div>
+
+                        <div class="stats-strip">
+                            <div class="stat-cell">
+                                <div class="stat-cell__val">{total}</div>
+                                <div class="stat-cell__lbl">"Total"</div>
                             </div>
-
-                            <div class="stats-row">
-                                <div class="stat-card">
-                                    <span class="stat-card__label">"Total students"</span>
-                                    <span class="stat-card__value">{total}</span>
-                                </div>
-                                <div class="stat-card">
-                                    <span class="stat-card__label">"Matched (all 3 sources)"</span>
-                                    <span class="stat-card__value">{matched}</span>
-                                </div>
-                                <div class="stat-card">
-                                    <span class="stat-card__label">"Filtered by tags"</span>
-                                    <span class="stat-card__value">{filtered}</span>
-                                </div>
-                                <div class="stat-card">
-                                    <span class="stat-card__label">"With Entra ID"</span>
-                                    <span class="stat-card__value">{with_id}</span>
-                                </div>
-                                <div class="stat-card">
-                                    <span class="stat-card__label">"Files generated"</span>
-                                    <span class="stat-card__value">{files_len}</span>
-                                </div>
+                            <div class="stat-cell">
+                                <div class="stat-cell__val">{matched}</div>
+                                <div class="stat-cell__lbl">"Matched"</div>
                             </div>
-
-                            <div class="download-panel">
-                                <h3 class="download-panel__title">"Generated CSV files"</h3>
-                                <div class="list">
-                                    {files.into_iter().map(|f| {
-                                        let name = f.name.clone();
-                                        let content = f.content.clone();
-                                        let count = f.count;
-                                        view! {
-                                            <a href="#" class="linklike"
-                                               on:click=move |ev| {
-                                                   ev.prevent_default();
-                                                   trigger_download(&name, &content);
-                                               }>
-                                                {f.name} " (" {count} " IDs)"
-                                            </a>
-                                        }
-                                    }).collect_view()}
-                                </div>
+                            <div class="stat-cell">
+                                <div class="stat-cell__val">{filtered}</div>
+                                <div class="stat-cell__lbl">"Filtered"</div>
                             </div>
+                            <div class="stat-cell">
+                                <div class="stat-cell__val">{with_id}</div>
+                                <div class="stat-cell__lbl">"With ID"</div>
+                            </div>
+                            <div class="stat-cell">
+                                <div class="stat-cell__val">{files_len}</div>
+                                <div class="stat-cell__lbl">"Files"</div>
+                            </div>
+                        </div>
 
-                            {has_warnings.then(|| view! {
-                                <details class="report-block">
-                                    <summary>
-                                        <b>"Processing log"</b>
-                                        <span class="hint">" Warnings and unmatched students"</span>
-                                    </summary>
+                        <div class="download-panel">
+                            <h3>"Generated CSV files"</h3>
+                            <div class="download-list">
+                                {files.into_iter().map(|f| {
+                                    let name = f.name.clone();
+                                    let content = f.content.clone();
+                                    let count = f.count;
+                                    view! {
+                                        <a href="#" class="download-item"
+                                           on:click=move |ev| {
+                                               ev.prevent_default();
+                                               trigger_download(&name, &content);
+                                           }>
+                                            {f.name}
+                                            <span class="download-item__count">{count} " IDs"</span>
+                                        </a>
+                                    }
+                                }).collect_view()}
+                            </div>
+                        </div>
+
+                        {has_warnings.then(|| view! {
+                            <details class="report-block">
+                                <summary>
+                                    <b>"Processing log"</b>
+                                    <span class="hint">" — warnings and unmatched students"</span>
+                                </summary>
+                                <div class="report-block__body">
                                     <div class="log-container">
                                         {warnings.into_iter().map(|w| view! {
-                                            <p class="warn">"⚠ " {w}</p>
+                                            <p>"⚠ " {w}</p>
                                         }).collect_view()}
                                     </div>
-                                </details>
-                            })}
+                                </div>
+                            </details>
+                        })}
 
-                            {has_year_groups.then(|| view! {
-                                <details class="report-block">
-                                    <summary>
-                                        <b>"Year group breakdown"</b>
-                                        <span class="hint">" Students per year group"</span>
-                                    </summary>
+                        {has_year_groups.then(|| view! {
+                            <details class="report-block">
+                                <summary>
+                                    <b>"Year group breakdown"</b>
+                                    <span class="hint">" — students per year group"</span>
+                                </summary>
+                                <div class="report-block__body">
                                     <div class="table-shell table-shell--medium">
                                         <table>
                                             <thead>
@@ -306,20 +337,20 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
                                             </tbody>
                                         </table>
                                     </div>
-                                </details>
-                            })}
-                        </section>
-                    }
-                })}
-            </main>
+                                </div>
+                            </details>
+                        })}
+                    </div>
+                }
+            })}
 
-            <footer class="footnote">
-                <p class="hint small">
-                    "Output CSV format: "
-                    <code>"version:v1.0"</code>
-                    " followed by one Entra " <code>"id"</code> " per line."
-                </p>
-            </footer>
+            <div class="tool-footer">
+                "Output: "
+                <code>"version:v1.0"</code>
+                " header, then one Entra "
+                <code>"id"</code>
+                " per line."
+            </div>
         </div>
     }
 }
