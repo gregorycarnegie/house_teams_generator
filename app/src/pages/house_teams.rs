@@ -182,6 +182,45 @@ pub fn HouseTeamsPage(navigate: RwSignal<Page>) -> impl IntoView {
                             </div>
                         </div>
 
+                        <div class="terminal" style="margin:0 0 16px;max-width:none;">
+                            <div class="terminal__bar">
+                                <span class="term-dot" style="background:var(--rose)"></span>
+                                <span class="term-dot" style="background:var(--amber)"></span>
+                                <span class="term-dot" style="background:var(--green)"></span>
+                                <span class="terminal__title">"house-teams — run output"</span>
+                            </div>
+                            <div class="terminal__body">
+                                <span class="term-line">
+                                    <span class="term-mute">"› parsing bromcom …………………  "</span>
+                                    <span class="term-ok">"✓"</span>
+                                    "  "
+                                    <span class="term-mute">{processed}" students"</span>
+                                </span>
+                                <span class="term-line">
+                                    <span class="term-mute">"› matching entra IDs …………  "</span>
+                                    <span class="term-ok">"✓"</span>
+                                    "  "
+                                    <span class="term-mute">{matched}" matched"</span>
+                                    {(missing_count > 0).then(|| view! {
+                                        <span class="term-warn">"  ⚠ "{missing_count}" unmatched"</span>
+                                    })}
+                                </span>
+                                <span class="term-line">
+                                    <span class="term-mute">"› building groups ……………………  "</span>
+                                    <span class="term-ok">"✓"</span>
+                                    "  "
+                                    <span class="term-info">{group_count}" groups"</span>
+                                </span>
+                                <span class="term-line">
+                                    <span class="term-ok">"✓"</span>
+                                    " done — "
+                                    <span class="term-info">{files_len}" csv files"</span>
+                                    " ready"
+                                    <span class="term-cursor"></span>
+                                </span>
+                            </div>
+                        </div>
+
                         <div class="download-panel">
                             <h3>"Generated CSV files"</h3>
                             <div class="download-list">

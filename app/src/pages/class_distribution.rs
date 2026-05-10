@@ -243,6 +243,7 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
                 let has_warnings = !warnings.is_empty();
                 let has_year_groups = !year_groups.is_empty();
                 let files_len = files.len();
+                let warnings_count = warnings.len();
                 view! {
                     <div class="panel">
                         <div class="panel__num">"04"</div>
@@ -270,6 +271,45 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
                             <div class="stat-cell">
                                 <div class="stat-cell__val">{files_len}</div>
                                 <div class="stat-cell__lbl">"Files"</div>
+                            </div>
+                        </div>
+
+                        <div class="terminal" style="margin:0 0 16px;max-width:none;">
+                            <div class="terminal__bar">
+                                <span class="term-dot" style="background:var(--rose)"></span>
+                                <span class="term-dot" style="background:var(--amber)"></span>
+                                <span class="term-dot" style="background:var(--green)"></span>
+                                <span class="terminal__title">"class-distribution — run output"</span>
+                            </div>
+                            <div class="terminal__body">
+                                <span class="term-line">
+                                    <span class="term-mute">"› loading student records …  "</span>
+                                    <span class="term-ok">"✓"</span>
+                                    "  "
+                                    <span class="term-mute">{total}" students"</span>
+                                </span>
+                                <span class="term-line">
+                                    <span class="term-mute">"› matching class + entra …  "</span>
+                                    <span class="term-ok">"✓"</span>
+                                    "  "
+                                    <span class="term-mute">{matched}" with IDs"</span>
+                                </span>
+                                <span class="term-line">
+                                    <span class="term-mute">"› applying tag filter ………  "</span>
+                                    <span class="term-ok">"✓"</span>
+                                    "  "
+                                    <span class="term-info">{filtered}" matched"</span>
+                                    {(warnings_count > 0).then(|| view! {
+                                        <span class="term-warn">"  ⚠ "{warnings_count}" warnings"</span>
+                                    })}
+                                </span>
+                                <span class="term-line">
+                                    <span class="term-ok">"✓"</span>
+                                    " done — "
+                                    <span class="term-info">{files_len}" csv file(s)"</span>
+                                    " ready"
+                                    <span class="term-cursor"></span>
+                                </span>
                             </div>
                         </div>
 
