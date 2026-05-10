@@ -55,6 +55,7 @@ Example: 9832aad8-e4fe-496b-a604-95c6ef01ae75
 ### Run locally
 
 ```bash
+cd app
 trunk serve
 ```
 
