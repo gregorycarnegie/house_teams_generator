@@ -24,15 +24,22 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
     let error_msg: RwSignal<Option<String>> = RwSignal::new(None);
     let result: RwSignal<Option<ClassDistResult>> = RwSignal::new(None);
 
-    let all_files_ready =
-        move || emails_file.get().is_some() && class_file.get().is_some() && entra_file.get().is_some();
+    let all_files_ready = move || {
+        emails_file.get().is_some() && class_file.get().is_some() && entra_file.get().is_some()
+    };
     let tags_non_empty = move || !tags_input.get().trim().is_empty();
     let can_generate = move || all_files_ready() && tags_non_empty();
 
     let on_generate = move |_| {
-        let Some(emails) = emails_file.get_untracked() else { return };
-        let Some(class) = class_file.get_untracked() else { return };
-        let Some(entra) = entra_file.get_untracked() else { return };
+        let Some(emails) = emails_file.get_untracked() else {
+            return;
+        };
+        let Some(class) = class_file.get_untracked() else {
+            return;
+        };
+        let Some(entra) = entra_file.get_untracked() else {
+            return;
+        };
         let raw_tags = tags_input.get_untracked();
         let yg_mode = yeargroup_mode.get_untracked();
 
@@ -58,7 +65,12 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
 
             let class_parsed = match common::xlsx_parser::parse_xlsx(
                 &class.bytes,
-                &["StudentFullName", "StudentYearGroup", "StudentClassList", "AdmissionNo"],
+                &[
+                    "StudentFullName",
+                    "StudentYearGroup",
+                    "StudentClassList",
+                    "AdmissionNo",
+                ],
             ) {
                 Ok(d) => d,
                 Err(e) => {

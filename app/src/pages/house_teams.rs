@@ -21,8 +21,12 @@ pub fn HouseTeamsPage(navigate: RwSignal<Page>) -> impl IntoView {
     let can_generate = move || bromcom_file.get().is_some() && entra_file.get().is_some();
 
     let on_generate = move |_| {
-        let Some(bromcom) = bromcom_file.get_untracked() else { return };
-        let Some(entra) = entra_file.get_untracked() else { return };
+        let Some(bromcom) = bromcom_file.get_untracked() else {
+            return;
+        };
+        let Some(entra) = entra_file.get_untracked() else {
+            return;
+        };
 
         processing.set(true);
         result.set(None);

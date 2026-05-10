@@ -4,9 +4,11 @@ use crate::types::Page;
 
 #[component]
 pub fn HomePage(navigate: RwSignal<Page>) -> impl IntoView {
-    let go = move |p: Page| move |ev: web_sys::MouseEvent| {
-        ev.prevent_default();
-        navigate.set(p);
+    let go = move |p: Page| {
+        move |ev: web_sys::MouseEvent| {
+            ev.prevent_default();
+            navigate.set(p);
+        }
     };
 
     view! {

@@ -1,6 +1,8 @@
 use leptos::prelude::*;
 
-use crate::pages::{class_distribution::ClassDistributionPage, home::HomePage, house_teams::HouseTeamsPage};
+use crate::pages::{
+    class_distribution::ClassDistributionPage, home::HomePage, house_teams::HouseTeamsPage,
+};
 use crate::types::Page;
 
 #[component]

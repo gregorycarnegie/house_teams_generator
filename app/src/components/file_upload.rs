@@ -2,7 +2,7 @@ use js_sys::{ArrayBuffer, Uint8Array};
 use leptos::prelude::*;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::{JsCast, JsValue};
-use wasm_bindgen_futures::{spawn_local, JsFuture};
+use wasm_bindgen_futures::{JsFuture, spawn_local};
 
 use crate::types::FileData;
 
