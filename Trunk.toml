@@ -2,7 +2,7 @@
 target = "app/index.html"
 dist = "dist"
 # Set public_url to your GitHub Pages path before deploying, e.g.:
-# public_url = "/house_teams_generator/"
+# public_url = "/entragen/"
 # For local dev leave it unset (defaults to "/").
 
 [watch]

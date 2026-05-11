@@ -124,7 +124,7 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
                     </a>
                 </nav>
                 <div class="topbar__right">
-                    <a href="https://github.com/gregorycarnegie/house_teams_generator" target="_blank" class="btn-sm">
+                    <a href="https://github.com/gregorycarnegie/entragen" target="_blank" class="btn-sm">
                         "GitHub ↗"
                     </a>
                 </div>

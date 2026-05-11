@@ -41,11 +41,8 @@ jobs:
         run: cargo test --workspace
 
       - name: Build
-        # Replace <REPO_NAME> with your GitHub repository name.
-        # Example: if the repo is github.com/alice/house_teams_generator
-        # then set PUBLIC_URL to /house_teams_generator/
         env:
-          PUBLIC_URL: /house_teams_generator/
+          PUBLIC_URL: /entragen/
         run: trunk build --release --public-url "$PUBLIC_URL"
 
       - name: Upload Pages artifact

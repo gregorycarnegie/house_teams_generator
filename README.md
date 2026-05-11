@@ -1,7 +1,7 @@
-# House Teams Generator
+# entragen
 
-[![Deploy to GitHub Pages](https://github.com/gregorycarnegie/house_teams_generator/actions/workflows/deploy.yml/badge.svg)](https://github.com/gregorycarnegie/house_teams_generator/actions/workflows/deploy.yml)
-[![GitHub Pages](https://img.shields.io/badge/live-GitHub%20Pages-blue?logo=github)](https://gregorycarnegie.github.io/house_teams_generator/)
+[![Deploy to GitHub Pages](https://github.com/gregorycarnegie/entragen/actions/workflows/deploy.yml/badge.svg)](https://github.com/gregorycarnegie/entragen/actions/workflows/deploy.yml)
+[![GitHub Pages](https://img.shields.io/badge/live-GitHub%20Pages-blue?logo=github)](https://gregorycarnegie.github.io/entragen/)
 [![Rust](https://img.shields.io/badge/language-Rust-orange?logo=rust)](https://www.rust-lang.org/)
 [![WebAssembly](https://img.shields.io/badge/runtime-WebAssembly-654FF0?logo=webassembly)](https://webassembly.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -72,7 +72,7 @@ The `common` crate (pure Rust) is tested natively; the `app` crate (Leptos WASM)
 ### Production build
 
 ```bash
-trunk build --release --public-url /house_teams_generator/
+trunk build --release --public-url /entragen/
 ```
 
 Output is in `dist/`.
@@ -80,7 +80,7 @@ Output is in `dist/`.
 ## Project Structure
 
 ```text
-house_teams_generator/
+entragen/
 ├── common/          # Pure-Rust logic (parsers, processors) — testable natively
 │   └── src/
 │       ├── csv_parser.rs
@@ -109,4 +109,4 @@ house_teams_generator/
 
 ## Deployment
 
-Pushes to `main` automatically build and deploy to GitHub Pages via the Actions workflow in `.github/workflows/deploy.yml`. The live URL is `https://<org>.github.io/house_teams_generator/`.
+Pushes to `main` automatically build and deploy to GitHub Pages via the Actions workflow in `.github/workflows/deploy.yml`. The live URL is `https://<org>.github.io/entragen/`.

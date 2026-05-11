@@ -23,10 +23,10 @@ pub fn HomePage(navigate: RwSignal<Page>) -> impl IntoView {
                     <a href="#tools">"Tools"</a>
                     <a href="#pipeline">"Pipeline"</a>
                     <a href="#privacy">"Privacy"</a>
-                    <a href="https://github.com/gregorycarnegie/house_teams_generator" target="_blank">"Docs"</a>
+                    <a href="https://github.com/gregorycarnegie/entragen" target="_blank">"Docs"</a>
                 </nav>
                 <div class="topbar__right">
-                    <a href="https://github.com/gregorycarnegie/house_teams_generator" target="_blank" class="btn-sm">"GitHub ↗"</a>
+                    <a href="https://github.com/gregorycarnegie/entragen" target="_blank" class="btn-sm">"GitHub ↗"</a>
                     <a href="#tools" class="btn-sm solid">"Launch →"</a>
                 </div>
             </div>
