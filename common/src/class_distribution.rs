@@ -50,9 +50,8 @@ pub fn process(
         return Err(ProcessError::NoTags);
     }
 
-    // Build email -> Entra ID
-    let mail_idx = entra.col_idx("mail").unwrap_or(0);
-    let id_idx = entra.col_idx("id").unwrap_or(1);
+    let mail_idx = entra.col_idx("mail").expect("validated by parser");
+    let id_idx = entra.col_idx("id").expect("validated by parser");
     let mut entra_lookup: HashMap<String, String> = HashMap::new();
     for row in &entra.rows {
         let mail = row
@@ -68,10 +67,15 @@ pub fn process(
         }
     }
 
-    // Build admission number -> (email_lower, year, first, last)
-    let adm_idx = emails.col_idx("Admission Number").unwrap_or(0);
-    let email_idx = emails.col_idx("Student email").unwrap_or(1);
-    let year_idx = emails.col_idx("Year Group Name").unwrap_or(2);
+    let adm_idx = emails
+        .col_idx("Admission Number")
+        .expect("validated by parser");
+    let email_idx = emails
+        .col_idx("Student email")
+        .expect("validated by parser");
+    let year_idx = emails
+        .col_idx("Year Group Name")
+        .expect("validated by parser");
     let mut student_lookup: HashMap<String, (String, String)> = HashMap::new(); // adm -> (email_lower, year)
     for row in &emails.rows {
         let adm = row
@@ -93,11 +97,18 @@ pub fn process(
         }
     }
 
-    // Process class list
-    let cl_adm_idx = class_list.col_idx("AdmissionNo").unwrap_or(0);
-    let cl_list_idx = class_list.col_idx("StudentClassList").unwrap_or(1);
-    let cl_year_idx = class_list.col_idx("StudentYearGroup").unwrap_or(2);
-    let cl_name_idx = class_list.col_idx("StudentFullName").unwrap_or(3);
+    let cl_adm_idx = class_list
+        .col_idx("AdmissionNo")
+        .expect("validated by parser");
+    let cl_list_idx = class_list
+        .col_idx("StudentClassList")
+        .expect("validated by parser");
+    let cl_year_idx = class_list
+        .col_idx("StudentYearGroup")
+        .expect("validated by parser");
+    let cl_name_idx = class_list
+        .col_idx("StudentFullName")
+        .expect("validated by parser");
 
     let mut warnings: Vec<String> = Vec::new();
     let mut students: Vec<StudentRecord> = Vec::new();

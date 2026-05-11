@@ -26,9 +26,8 @@ fn sanitize_name(name: &str) -> String {
 }
 
 pub fn process(bromcom: &ParsedData, entra: &ParsedData, timestamp: &str) -> HouseTeamsResult {
-    // Build email -> Entra ID lookup
-    let mail_idx = entra.col_idx("mail").unwrap_or(0);
-    let id_idx = entra.col_idx("id").unwrap_or(1);
+    let mail_idx = entra.col_idx("mail").expect("validated by parser");
+    let id_idx = entra.col_idx("id").expect("validated by parser");
 
     let mut email_to_id: HashMap<String, String> = HashMap::new();
     for row in &entra.rows {
@@ -42,9 +41,13 @@ pub fn process(bromcom: &ParsedData, entra: &ParsedData, timestamp: &str) -> Hou
         }
     }
 
-    let house_idx = bromcom.col_idx("House(s)").unwrap_or(0);
-    let email_idx = bromcom.col_idx("Student email").unwrap_or(1);
-    let year_idx = bromcom.col_idx("Year Group Name").unwrap_or(2);
+    let house_idx = bromcom.col_idx("House(s)").expect("validated by parser");
+    let email_idx = bromcom
+        .col_idx("Student email")
+        .expect("validated by parser");
+    let year_idx = bromcom
+        .col_idx("Year Group Name")
+        .expect("validated by parser");
 
     // group key -> (house label, year label, set of Entra IDs)
     let mut groups: HashMap<String, (String, String, HashSet<String>)> = HashMap::new();
