@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use crate::errors::ProcessError;
 use crate::types::{ClassDistResult, GeneratedFile, ParsedData, YearGroupStat};
 
-const ENTRA_HEADER: &str = "version:v1.0\nMember object ID or user principal name [memberObjectIdOrUpn] Required\nExample: 9832aad8-e4fe-496b-a604-95c6eF01ae75";
+const ENTRA_HEADER: &str = "version:v1.0\nMember object ID or user principal name [memberObjectIdOrUpn] Required\nExample: 9832aad8-e4fe-496b-a604-95c6ef01ae75";
 
 fn sanitize(name: &str) -> String {
     let t = name.trim();
@@ -163,7 +163,6 @@ pub fn process(
         .collect();
 
     let filtered = filtered_students.len();
-    let with_id = filtered;
 
     // Deduplicate by email_lower within each group
     let tag_token: String = tags
@@ -237,7 +236,6 @@ pub fn process(
         total,
         matched,
         filtered,
-        with_id,
         files,
         year_groups,
         warnings,
@@ -334,7 +332,6 @@ mod tests {
         assert_eq!(result.total, 3);
         assert_eq!(result.matched, 2);
         assert_eq!(result.filtered, 1);
-        assert_eq!(result.with_id, 1);
         assert_eq!(result.warnings.len(), 2);
         assert!(
             result

@@ -72,7 +72,6 @@ pub struct ClassDistResult {
     pub total: usize,
     pub matched: usize,
     pub filtered: usize,
-    pub with_id: usize,
     pub files: Vec<GeneratedFile>,
     pub year_groups: Vec<YearGroupStat>,
     pub warnings: Vec<String>,

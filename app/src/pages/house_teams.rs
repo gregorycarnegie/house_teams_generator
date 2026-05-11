@@ -70,7 +70,7 @@ pub fn HouseTeamsPage(navigate: RwSignal<Page>) -> impl IntoView {
                 <div class="logo" on:click=move |ev| { ev.prevent_default(); navigate.set(Page::Home); }>
                     <div class="logo__mark"></div>
                     <span>"entragen"</span>
-                    <span class="mono" style="color:var(--ink-4);font-size:0.82rem;font-weight:400">"v1.2.0"</span>
+                    <span class="mono" style="color:var(--ink-4);font-size:0.82rem;font-weight:400">{concat!("v", env!("CARGO_PKG_VERSION"))}</span>
                 </div>
                 <nav class="nav">
                     <a href="#" class="active always"

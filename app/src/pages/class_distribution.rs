@@ -111,7 +111,7 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
                 <div class="logo" on:click=move |ev| { ev.prevent_default(); navigate.set(Page::Home); }>
                     <div class="logo__mark"></div>
                     <span>"entragen"</span>
-                    <span class="mono" style="color:var(--ink-4);font-size:0.82rem;font-weight:400">"v1.2.0"</span>
+                    <span class="mono" style="color:var(--ink-4);font-size:0.82rem;font-weight:400">{concat!("v", env!("CARGO_PKG_VERSION"))}</span>
                 </div>
                 <nav class="nav">
                     <a href="#" class="always"
@@ -251,7 +251,7 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
             </div>
 
             {move || result.get().map(|r| {
-                let ClassDistResult { total, matched, filtered, with_id, files, year_groups, warnings } = r;
+                let ClassDistResult { total, matched, filtered, files, year_groups, warnings } = r;
                 let has_warnings = !warnings.is_empty();
                 let has_year_groups = !year_groups.is_empty();
                 let files_len = files.len();
@@ -275,10 +275,6 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
                             <div class="stat-cell">
                                 <div class="stat-cell__val">{filtered}</div>
                                 <div class="stat-cell__lbl">"Filtered"</div>
-                            </div>
-                            <div class="stat-cell">
-                                <div class="stat-cell__val">{with_id}</div>
-                                <div class="stat-cell__lbl">"With ID"</div>
                             </div>
                             <div class="stat-cell">
                                 <div class="stat-cell__val">{files_len}</div>

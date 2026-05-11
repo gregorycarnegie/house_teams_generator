@@ -74,14 +74,13 @@ pub fn process(bromcom: &ParsedData, entra: &ParsedData, timestamp: &str) -> Hou
                 year,
                 reason: "No Entra ID found".to_string(),
             }),
-            Some(id) if house.is_empty() || year.is_empty() => {
+            Some(_) if house.is_empty() || year.is_empty() => {
                 missing.push(MissingMatch {
                     email,
                     house,
                     year,
                     reason: "Missing house or year group".to_string(),
                 });
-                let _ = id;
             }
             Some(id) => {
                 let key = format!("{}_{}", sanitize_name(&house), sanitize_name(&year));

@@ -36,7 +36,7 @@ checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
 
 [[package]]
 name = "app"
-version = "0.1.0"
+version = "1.2.0"
 dependencies = [
  "common",
  "js-sys",
@@ -215,7 +215,7 @@ checksum = "2550f75b8cfac212855f6b1885455df8eaee8fe8e246b647d69146142e016084"
 
 [[package]]
 name = "common"
-version = "0.1.0"
+version = "1.2.0"
 dependencies = [
  "calamine",
  "csv",
