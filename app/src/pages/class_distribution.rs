@@ -195,7 +195,7 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
                             rows="3"
                             placeholder="Enter class tags (one per line or space-separated)\nExample: MAT MAF SCI"
                             on:input=move |ev| {
-                                let el: web_sys::HtmlInputElement =
+                                let el: web_sys::HtmlTextAreaElement =
                                     ev.target().unwrap().dyn_into().unwrap();
                                 tags_input.set(el.value());
                             }

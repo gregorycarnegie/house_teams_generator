@@ -22,6 +22,7 @@ features = [
   "Url",
   "HtmlAnchorElement",
   "HtmlInputElement",
+  "HtmlTextAreaElement",
   "DragEvent",
   "DataTransfer",
   "Window",
