@@ -6,4 +6,4 @@ dist = "dist"
 # For local dev leave it unset (defaults to "/").
 
 [watch]
-ignore = ["dist", "node_modules", "house-teams/dist", "class-distribution/dist"]
+ignore = ["dist"]
