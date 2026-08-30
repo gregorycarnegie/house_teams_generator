@@ -32,6 +32,27 @@ pub fn parse_any(bytes: &[u8], required: &[&str]) -> Result<ParsedData, ParseErr
     csv_parser::parse_csv(&String::from_utf8_lossy(bytes), required)
 }
 
+/// Header block every Entra ID bulk-import CSV starts with.
+pub(crate) const ENTRA_HEADER: &str = "version:v1.0\nMember object ID or user principal name [memberObjectIdOrUpn] Required\nExample: 9832aad8-e4fe-496b-a604-95c6ef01ae75";
+
+/// Makes a group name safe to use as a filename component.
+pub(crate) fn sanitize_name(name: &str) -> String {
+    let trimmed = name.trim();
+    if trimmed.is_empty() {
+        return "_Unspecified".to_string();
+    }
+    trimmed
+        .chars()
+        .map(|c| {
+            if c.is_alphanumeric() || c == '-' || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect()
+}
+
 /// Shared by both parsers: headers must exist and cover the required columns.
 pub(crate) fn validate_headers(headers: &[String], required: &[&str]) -> Result<(), ParseError> {
     if headers.is_empty() || headers.iter().all(|h| h.is_empty()) {

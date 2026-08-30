@@ -1,27 +1,11 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{
+    ENTRA_HEADER,
     errors::ProcessError,
+    sanitize_name,
     types::{ClassDistResult, GeneratedFile, ParsedData, YearGroupStat},
 };
-
-const ENTRA_HEADER: &str = "version:v1.0\nMember object ID or user principal name [memberObjectIdOrUpn] Required\nExample: 9832aad8-e4fe-496b-a604-95c6ef01ae75";
-
-fn sanitize(name: &str) -> String {
-    let t = name.trim();
-    if t.is_empty() {
-        return "Unspecified".to_string();
-    }
-    t.chars()
-        .map(|c| {
-            if c.is_alphanumeric() || c == '-' || c == '_' {
-                c
-            } else {
-                '_'
-            }
-        })
-        .collect()
-}
 
 pub fn parse_tags(input: &str) -> Vec<String> {
     let seen: HashSet<String> = input
@@ -34,7 +18,23 @@ pub fn parse_tags(input: &str) -> Vec<String> {
     tags
 }
 
+/// Trimmed cell at `idx`, or "" when the row is short.
+fn cell(row: &[String], idx: usize) -> &str {
+    row.get(idx).map_or("", |s| s.trim())
+}
+
+/// How many distinct people these records cover. Keyed on the Entra ID, which is
+/// what the generated files dedupe on, so a stat can never exceed a file's rows.
+fn distinct_students<'a>(records: impl Iterator<Item = &'a StudentRecord>) -> usize {
+    records
+        .map(|s| s.entra_id.as_str())
+        .collect::<HashSet<_>>()
+        .len()
+}
+
 struct StudentRecord {
+    /// Already resolved to "Unspecified" when blank, so the file split and the
+    /// year-group stats below cannot disagree about which bucket a student is in.
     year_group: String,
     class_list: String,
     entra_id: String,
@@ -56,16 +56,10 @@ pub fn process(
     let id_idx = entra.col_idx("id").expect("validated by parser");
     let mut entra_lookup: HashMap<String, String> = HashMap::new();
     for row in &entra.rows {
-        let mail = row
-            .get(mail_idx)
-            .map(|s| s.trim().to_lowercase())
-            .unwrap_or_default();
-        let id = row
-            .get(id_idx)
-            .map(|s| s.trim().to_string())
-            .unwrap_or_default();
+        let mail = cell(row, mail_idx).to_lowercase();
+        let id = cell(row, id_idx);
         if !mail.is_empty() && !id.is_empty() {
-            entra_lookup.entry(mail).or_insert(id);
+            entra_lookup.entry(mail).or_insert(id.to_string());
         }
     }
 
@@ -80,22 +74,12 @@ pub fn process(
         .expect("validated by parser");
     let mut student_lookup: HashMap<String, (String, String)> = HashMap::new(); // adm -> (email_lower, year)
     for row in &emails.rows {
-        let adm = row
-            .get(adm_idx)
-            .map(|s| s.trim().to_string())
-            .unwrap_or_default();
-        let email = row
-            .get(email_idx)
-            .map(|s| s.trim().to_string())
-            .unwrap_or_default();
-        let year = row
-            .get(year_idx)
-            .map(|s| s.trim().to_string())
-            .unwrap_or_default();
+        let adm = cell(row, adm_idx);
+        let email = cell(row, email_idx);
         if !adm.is_empty() && !email.is_empty() {
             student_lookup
-                .entry(adm)
-                .or_insert((email.to_lowercase(), year));
+                .entry(adm.to_string())
+                .or_insert((email.to_lowercase(), cell(row, year_idx).to_string()));
         }
     }
 
@@ -118,27 +102,13 @@ pub fn process(
     let tags_lower: Vec<String> = tags.iter().map(|t| t.to_lowercase()).collect();
 
     for row in &class_list.rows {
-        let adm = row
-            .get(cl_adm_idx)
-            .map(|s| s.trim().to_string())
-            .unwrap_or_default();
+        let adm = cell(row, cl_adm_idx);
         if adm.is_empty() {
             continue;
         }
-        let class_str = row
-            .get(cl_list_idx)
-            .map(|s| s.trim().to_string())
-            .unwrap_or_default();
-        let year = row
-            .get(cl_year_idx)
-            .map(|s| s.trim().to_string())
-            .unwrap_or_default();
-        let name = row
-            .get(cl_name_idx)
-            .map(|s| s.trim().to_string())
-            .unwrap_or_default();
+        let name = cell(row, cl_name_idx);
 
-        let Some((email_lower, student_year)) = student_lookup.get(&adm) else {
+        let Some((email_lower, student_year)) = student_lookup.get(adm) else {
             warnings.push(format!(
                 "AdmissionNo {adm} ({name}) in class list but not in emails file"
             ));
@@ -150,23 +120,28 @@ pub fn process(
             continue;
         };
 
-        let resolved_year = if student_year.is_empty() {
-            year.clone()
-        } else {
-            student_year.clone()
+        // Emails file wins; the class list is the fallback; "Unspecified" last.
+        let year_group = match (student_year.as_str(), cell(row, cl_year_idx)) {
+            ("", "") => "Unspecified",
+            ("", fallback) => fallback,
+            (year, _) => year,
         };
 
         students.push(StudentRecord {
-            year_group: resolved_year,
-            class_list: class_str,
+            year_group: year_group.to_string(),
+            class_list: cell(row, cl_list_idx).to_string(),
             entra_id: entra_id.clone(),
         });
     }
 
     let total = student_lookup.len();
-    let matched = students.len();
+    // Distinct students, not class-list rows: an export with one row per class
+    // would otherwise count a student once per class and overshoot both `total`
+    // and the row count of the file they land in.
+    let matched = distinct_students(students.iter());
 
-    // Filter by tags
+    // Filter by tags. Kept per-row, because a student's tags are spread across
+    // their rows - only the counts collapse to one entry per student.
     let filtered_students: Vec<&StudentRecord> = students
         .iter()
         .filter(|s| {
@@ -175,30 +150,30 @@ pub fn process(
         })
         .collect();
 
-    let filtered = filtered_students.len();
+    let filtered = distinct_students(filtered_students.iter().copied());
 
-    // Deduplicate by email_lower within each group
     // take(20) on chars, not a byte slice: a multi-byte tag would panic on a
-    // char boundary.
-    let tag_token: String = tags
-        .iter()
-        .take(3)
-        .map(|t| t.as_str())
-        .collect::<Vec<_>>()
-        .join("_")
-        .chars()
-        .take(20)
-        .collect();
+    // char boundary. Sanitized like the year is: tags are typed by hand, and
+    // this goes straight into a filename.
+    let tag_token: String = sanitize_name(
+        &tags
+            .iter()
+            .take(3)
+            .map(|t| t.as_str())
+            .collect::<Vec<_>>()
+            .join("_")
+            .chars()
+            .take(20)
+            .collect::<String>(),
+    );
 
     let files: Vec<GeneratedFile> = if yeargroup_mode {
         let mut year_map: HashMap<String, HashSet<String>> = HashMap::new();
         for s in &filtered_students {
-            let year = if s.year_group.is_empty() {
-                "Unspecified".to_string()
-            } else {
-                s.year_group.clone()
-            };
-            year_map.entry(year).or_default().insert(s.entra_id.clone());
+            year_map
+                .entry(s.year_group.clone())
+                .or_default()
+                .insert(s.entra_id.clone());
         }
         let mut entries: Vec<(String, HashSet<String>)> = year_map.into_iter().collect();
         entries.sort_by(|a, b| a.0.cmp(&b.0));
@@ -211,7 +186,7 @@ pub fn process(
                 GeneratedFile {
                     name: format!(
                         "distribution_group_{}_{}_{}.csv",
-                        sanitize(&year),
+                        sanitize_name(&year),
                         tag_token,
                         timestamp
                     ),
@@ -235,19 +210,21 @@ pub fn process(
         }]
     };
 
-    // Year group stats (across all filtered students)
-    let mut year_counts: HashMap<String, usize> = HashMap::new();
+    // Year group stats (across all filtered students). Deduped like the files
+    // are, so in year-group mode each stat equals its file's row count.
+    let mut year_counts: HashMap<&str, HashSet<&str>> = HashMap::new();
     for s in &filtered_students {
-        let year = if s.year_group.is_empty() {
-            "Unspecified".to_string()
-        } else {
-            s.year_group.clone()
-        };
-        *year_counts.entry(year).or_default() += 1;
+        year_counts
+            .entry(&s.year_group)
+            .or_default()
+            .insert(&s.entra_id);
     }
     let mut year_groups: Vec<YearGroupStat> = year_counts
         .into_iter()
-        .map(|(year, count)| YearGroupStat { year, count })
+        .map(|(year, ids)| YearGroupStat {
+            year: year.to_string(),
+            count: ids.len(),
+        })
         .collect();
     year_groups.sort_by(|a, b| a.year.cmp(&b.year));
 
@@ -447,5 +424,85 @@ mod tests {
             "distribution_group_all_日本語のクラスタグですよとても長いタグの_20260510.csv"
         );
         assert_eq!(result.filtered, 0);
+    }
+
+    #[test]
+    fn process_sanitizes_a_tag_before_it_reaches_the_filename() {
+        // Tags are typed by hand, so a path separator can reach the download name.
+        let result = process(
+            &emails_data(),
+            &class_list_data(),
+            &entra_data(),
+            &["../MA".to_string()],
+            false,
+            "20260510",
+        )
+        .expect("an awkward tag should still process");
+
+        assert_eq!(
+            result.files[0].name,
+            "distribution_group_all____MA_20260510.csv"
+        );
+    }
+
+    #[test]
+    fn process_counts_a_student_once_across_several_class_list_rows() {
+        // A class list exported one row per class: Alice appears three times,
+        // twice under a matching tag. The files have always deduped her; the
+        // stats used to count the rows.
+        let class_list = parsed(
+            &[
+                "AdmissionNo",
+                "StudentClassList",
+                "StudentYearGroup",
+                "StudentFullName",
+            ],
+            vec![
+                vec!["A1", "7MAT1", "Y7", "Alice A"],
+                vec!["A1", "7MAT2", "Y7", "Alice A"],
+                vec!["A1", "7ENG1", "Y7", "Alice A"],
+                vec!["A2", "8MAT1", "Y8", "Bob B"],
+            ],
+        );
+
+        let result = process(
+            &emails_data(),
+            &class_list,
+            &entra_data(),
+            &["MAT".to_string()],
+            false,
+            "20260510",
+        )
+        .expect("a duplicated class list should process");
+
+        // Two people, not four rows - and never more than the emails file holds.
+        assert_eq!(result.matched, 2);
+        assert_eq!(result.filtered, 2);
+        assert!(result.matched <= result.total);
+        // The stat and the file it describes agree.
+        assert_eq!(result.files[0].count, result.filtered);
+
+        let by_year = process(
+            &emails_data(),
+            &class_list,
+            &entra_data(),
+            &["MAT".to_string()],
+            true,
+            "20260510",
+        )
+        .expect("a duplicated class list should split by year");
+
+        assert_eq!(
+            by_year
+                .year_groups
+                .iter()
+                .map(|stat| (stat.year.as_str(), stat.count))
+                .collect::<Vec<_>>(),
+            vec![("Year 7", 1), ("Year 8", 1)]
+        );
+        assert_eq!(
+            by_year.files.iter().map(|f| f.count).collect::<Vec<_>>(),
+            vec![1, 1]
+        );
     }
 }

@@ -2,6 +2,22 @@
 
 Notable changes to entragen are documented here.
 
+## 1.3.1 - 2026-08-30
+
+### Fixed
+
+- Count class distribution students once each, rather than once per class-list row, so the summary figures can no longer exceed the student total or the row count of the file they describe.
+- Sanitize the class-tag filename component, which previously carried typed input into the download name unaltered.
+
+### Changed
+
+- Share the Entra ID header block and filename sanitizer between both generators instead of keeping a copy in each.
+- Documented that class tags match anywhere within `StudentClassList`, and aligned the README examples with the ones the interface suggests.
+
+### Added
+
+- Added regression tests for duplicated class-list rows and for tag sanitization.
+
 ## 1.3.0 - 2026-08-30
 
 ### Added

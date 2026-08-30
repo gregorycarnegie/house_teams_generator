@@ -24,7 +24,9 @@ Required columns:
 
 ### Class Distribution Group Generator
 
-Upload a Bromcom Student Emails export, a Bromcom Class List export, and an Entra ID export. Filter students by class tags (e.g. `MA`, `EN`, `SC`) and optionally split output by year group.
+Upload a Bromcom Student Emails export, a Bromcom Class List export, and an Entra ID export. Filter students by class tags (e.g. `MAT`, `MAF`, `SCI`) and optionally split output by year group.
+
+A tag matches anywhere in `StudentClassList`, so `MAT` picks up `10MAT1` and `7MAT3` alike. Keep tags long enough to be unambiguous: a short one matches more than you expect — `MA` would also pull in every `DRAMA` class.
 
 Required columns:
 

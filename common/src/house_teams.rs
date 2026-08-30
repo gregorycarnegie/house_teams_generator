@@ -1,28 +1,12 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::types::{GeneratedFile, HouseTeamsResult, MissingMatch, ParsedData};
-
-const ENTRA_HEADER: &str = "version:v1.0\nMember object ID or user principal name [memberObjectIdOrUpn] Required\nExample: 9832aad8-e4fe-496b-a604-95c6ef01ae75";
+use crate::{
+    ENTRA_HEADER, sanitize_name,
+    types::{GeneratedFile, HouseTeamsResult, MissingMatch, ParsedData},
+};
 
 fn normalize(s: &str) -> String {
     s.trim().to_lowercase()
-}
-
-fn sanitize_name(name: &str) -> String {
-    let trimmed = name.trim();
-    if trimmed.is_empty() {
-        return "_Unspecified".to_string();
-    }
-    trimmed
-        .chars()
-        .map(|c| {
-            if c.is_alphanumeric() || c == '-' || c == '_' {
-                c
-            } else {
-                '_'
-            }
-        })
-        .collect()
 }
 
 pub fn process(bromcom: &ParsedData, entra: &ParsedData, timestamp: &str) -> HouseTeamsResult {
