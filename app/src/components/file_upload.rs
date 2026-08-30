@@ -1,7 +1,6 @@
 use js_sys::{ArrayBuffer, Uint8Array};
 use leptos::prelude::*;
-use wasm_bindgen::closure::Closure;
-use wasm_bindgen::{JsCast, JsValue};
+use wasm_bindgen::{JsCast, JsValue, closure::Closure};
 use wasm_bindgen_futures::{JsFuture, spawn_local};
 
 use crate::types::FileData;
@@ -54,25 +53,17 @@ async fn read_file_bytes(file: &web_sys::File) -> Result<Vec<u8>, String> {
 #[component]
 pub fn FileUploadCard(
     label: &'static str,
-    badge: &'static str,
     description: &'static str,
-    accept: &'static str,
     required_cols: &'static [&'static str],
-    is_xlsx: bool,
     on_file: WriteSignal<Option<FileData>>,
     file_status: RwSignal<FileStatus>,
 ) -> impl IntoView {
     let handle_bytes = move |name: String, bytes: Vec<u8>| {
-        let validation = if is_xlsx {
-            common::xlsx_parser::parse_xlsx(&bytes, required_cols)
-                .map(|_| ())
-                .map_err(|e| e.to_string())
-        } else {
-            let text = String::from_utf8_lossy(&bytes).into_owned();
-            common::csv_parser::parse_csv(&text, required_cols)
-                .map(|_| ())
-                .map_err(|e| e.to_string())
-        };
+        // The format is whatever the file actually is, not whatever this slot
+        // used to expect.
+        let validation = common::parse_any(&bytes, required_cols)
+            .map(|_| ())
+            .map_err(|e| e.to_string());
         match validation {
             Ok(()) => {
                 file_status.set(FileStatus::Ready(name));
@@ -123,7 +114,6 @@ pub fn FileUploadCard(
         <div class="upload-card">
             <div class="upload-card__header">
                 <span class="upload-card__label">{label}</span>
-                <span class="upload-card__badge">{badge}</span>
             </div>
             <p class="upload-card__desc">{description}</p>
             <div
@@ -133,11 +123,11 @@ pub fn FileUploadCard(
                 on:dragover=on_dragover
                 on:drop=on_drop
             >
-                <input type="file" accept=accept on:change=on_change />
+                <input type="file" accept=common::ACCEPTED_EXTENSIONS on:change=on_change />
                 {move || match file_status.get() {
                     FileStatus::Idle => view! {
                         <span class="file-picker__idle">"Drop or click to browse"</span>
-                        <span class="file-picker__formats">{accept}</span>
+                        <span class="file-picker__formats">{common::ACCEPTED_EXTENSIONS}</span>
                     }.into_any(),
                     FileStatus::Loading => view! {
                         <span class="file-picker__idle">"Reading…"</span>

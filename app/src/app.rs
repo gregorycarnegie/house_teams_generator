@@ -1,9 +1,11 @@
 use leptos::prelude::*;
 
-use crate::pages::{
-    class_distribution::ClassDistributionPage, home::HomePage, house_teams::HouseTeamsPage,
+use crate::{
+    pages::{
+        class_distribution::ClassDistributionPage, home::HomePage, house_teams::HouseTeamsPage,
+    },
+    types::Page,
 };
-use crate::types::Page;
 
 #[component]
 pub fn App() -> impl IntoView {

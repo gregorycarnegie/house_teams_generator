@@ -36,7 +36,7 @@ pub fn HomePage(navigate: RwSignal<Page>) -> impl IntoView {
             <section class="hero">
                 <div class="badge">
                     <span class="badge__pill">"NEW"</span>
-                    " XLSX support for class lists "
+                    " Every upload now takes CSV, XLSX or ODS "
                     <span class="badge__sep">"→"</span>
                 </div>
                 <h1>

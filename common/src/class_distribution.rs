@@ -1,7 +1,9 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::errors::ProcessError;
-use crate::types::{ClassDistResult, GeneratedFile, ParsedData, YearGroupStat};
+use crate::{
+    errors::ProcessError,
+    types::{ClassDistResult, GeneratedFile, ParsedData, YearGroupStat},
+};
 
 const ENTRA_HEADER: &str = "version:v1.0\nMember object ID or user principal name [memberObjectIdOrUpn] Required\nExample: 9832aad8-e4fe-496b-a604-95c6ef01ae75";
 
@@ -176,13 +178,17 @@ pub fn process(
     let filtered = filtered_students.len();
 
     // Deduplicate by email_lower within each group
+    // take(20) on chars, not a byte slice: a multi-byte tag would panic on a
+    // char boundary.
     let tag_token: String = tags
         .iter()
         .take(3)
         .map(|t| t.as_str())
         .collect::<Vec<_>>()
-        .join("_");
-    let tag_token = &tag_token[..tag_token.len().min(20)];
+        .join("_")
+        .chars()
+        .take(20)
+        .collect();
 
     let files: Vec<GeneratedFile> = if yeargroup_mode {
         let mut year_map: HashMap<String, HashSet<String>> = HashMap::new();
@@ -199,7 +205,8 @@ pub fn process(
         entries
             .into_iter()
             .map(|(year, ids)| {
-                let id_vec: Vec<String> = ids.into_iter().collect();
+                let mut id_vec: Vec<String> = ids.into_iter().collect();
+                id_vec.sort();
                 let content = format!("{}\n{}\n", ENTRA_HEADER, id_vec.join("\n"));
                 GeneratedFile {
                     name: format!(
@@ -218,7 +225,8 @@ pub fn process(
             .iter()
             .map(|s| s.entra_id.clone())
             .collect();
-        let id_vec: Vec<String> = all_ids.into_iter().collect();
+        let mut id_vec: Vec<String> = all_ids.into_iter().collect();
+        id_vec.sort();
         let content = format!("{}\n{}\n", ENTRA_HEADER, id_vec.join("\n"));
         vec![GeneratedFile {
             name: format!("distribution_group_all_{}_{}.csv", tag_token, timestamp),
@@ -274,6 +282,11 @@ mod tests {
                 vec!["A1", "Alice@school.org", "Year 7"],
                 vec!["A2", "bob@school.org", "Year 8"],
                 vec!["A3", "charlie@school.org", "Year 8"],
+                // Admission number present, email blank: only one half of the
+                // student_lookup guard fails, so && and || disagree here.
+                vec!["A5", "", "Year 9"],
+                // Hyphenated year survives sanitize(); "Year 7" would not show it.
+                vec!["A6", "erin@school.org", "Sixth-Form"],
             ],
         )
     }
@@ -291,6 +304,7 @@ mod tests {
                 vec!["A2", "8EN English", "Y8", "Bob B"],
                 vec!["A3", "8MA Maths", "Y8", "Charlie C"],
                 vec!["A4", "7MA Biology", "Y7", "Dana D"],
+                vec!["A6", "12MA Maths", "S6", "Erin E"],
             ],
         )
     }
@@ -301,6 +315,10 @@ mod tests {
             vec![
                 vec!["ID-ALICE", "alice@school.org"],
                 vec!["ID-BOB", "bob@school.org"],
+                // Mail present, ID blank: Charlie stays unmatched only because
+                // the guard is && - under || he would resolve to an empty ID.
+                vec!["", "charlie@school.org"],
+                vec!["ID-ERIN", "erin@school.org"],
             ],
         )
     }
@@ -340,9 +358,9 @@ mod tests {
         )
         .expect("class distribution should process");
 
-        assert_eq!(result.total, 3);
-        assert_eq!(result.matched, 2);
-        assert_eq!(result.filtered, 1);
+        assert_eq!(result.total, 4);
+        assert_eq!(result.matched, 3);
+        assert_eq!(result.filtered, 2);
         assert_eq!(result.warnings.len(), 2);
         assert!(
             result
@@ -357,13 +375,19 @@ mod tests {
             result.files[0].name,
             "distribution_group_all_MA_20260510.csv"
         );
-        assert_eq!(result.files[0].count, 1);
+        assert_eq!(result.files[0].count, 2);
         assert!(result.files[0].content.contains("ID-ALICE"));
+        assert!(result.files[0].content.contains("ID-ERIN"));
         assert!(!result.files[0].content.contains("ID-BOB"));
 
-        assert_eq!(result.year_groups.len(), 1);
-        assert_eq!(result.year_groups[0].year, "Year 7");
-        assert_eq!(result.year_groups[0].count, 1);
+        assert_eq!(
+            result
+                .year_groups
+                .iter()
+                .map(|stat| (stat.year.as_str(), stat.count))
+                .collect::<Vec<_>>(),
+            vec![("Sixth-Form", 1), ("Year 7", 1)]
+        );
     }
 
     #[test]
@@ -378,8 +402,8 @@ mod tests {
         )
         .expect("class distribution should process");
 
-        assert_eq!(result.filtered, 2);
-        assert_eq!(result.files.len(), 2);
+        assert_eq!(result.filtered, 3);
+        assert_eq!(result.files.len(), 3);
         assert_eq!(
             result
                 .files
@@ -387,19 +411,41 @@ mod tests {
                 .map(|f| f.name.as_str())
                 .collect::<Vec<_>>(),
             vec![
+                "distribution_group_Sixth-Form_EN_MA_20260510.csv",
                 "distribution_group_Year_7_EN_MA_20260510.csv",
                 "distribution_group_Year_8_EN_MA_20260510.csv"
             ]
         );
-        assert!(result.files[0].content.contains("ID-ALICE"));
-        assert!(result.files[1].content.contains("ID-BOB"));
+        assert!(result.files[0].content.contains("ID-ERIN"));
+        assert!(result.files[1].content.contains("ID-ALICE"));
+        assert!(result.files[2].content.contains("ID-BOB"));
         assert_eq!(
             result
                 .year_groups
                 .iter()
                 .map(|stat| (stat.year.as_str(), stat.count))
                 .collect::<Vec<_>>(),
-            vec![("Year 7", 1), ("Year 8", 1)]
+            vec![("Sixth-Form", 1), ("Year 7", 1), ("Year 8", 1)]
         );
+    }
+
+    #[test]
+    fn process_truncates_a_multibyte_tag_without_panicking() {
+        // 24 chars, 72 bytes: a byte slice at 20 would land mid-character.
+        let result = process(
+            &emails_data(),
+            &class_list_data(),
+            &entra_data(),
+            &["日本語のクラスタグですよとても長いタグの名前です".to_string()],
+            false,
+            "20260510",
+        )
+        .expect("a multi-byte tag should process");
+
+        assert_eq!(
+            result.files[0].name,
+            "distribution_group_all_日本語のクラスタグですよとても長いタグの_20260510.csv"
+        );
+        assert_eq!(result.filtered, 0);
     }
 }

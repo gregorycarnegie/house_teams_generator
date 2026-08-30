@@ -1,7 +1,6 @@
-use crate::errors::ParseError;
-use crate::types::ParsedData;
+use crate::{errors::ParseError, types::ParsedData, validate_headers};
 
-pub fn parse_csv(text: &str, required: &[&str]) -> Result<ParsedData, ParseError> {
+pub(crate) fn parse_csv(text: &str, required: &[&str]) -> Result<ParsedData, ParseError> {
     let text = text.trim_start_matches('\u{FEFF}');
 
     let mut reader = csv::ReaderBuilder::new()
@@ -15,29 +14,23 @@ pub fn parse_csv(text: &str, required: &[&str]) -> Result<ParsedData, ParseError
 
     let headers: Vec<String> = raw_headers.iter().map(|h| h.trim().to_string()).collect();
 
-    if headers.is_empty() || headers.iter().all(|h| h.is_empty()) {
-        return Err(ParseError::EmptyFile);
-    }
+    validate_headers(&headers, required)?;
 
-    for req in required {
-        if !headers.iter().any(|h| h == req) {
-            return Err(ParseError::MissingColumn(req.to_string()));
+    let mut rows: Vec<Vec<String>> = Vec::new();
+    for record in reader.records() {
+        // Surface a bad record rather than dropping it - a short student list is
+        // worse than an error, because nobody notices it.
+        let record = record.map_err(|e| ParseError::CsvError(e.to_string()))?;
+        if record.iter().all(|f| f.trim().is_empty()) {
+            continue;
         }
+        let mut fields: Vec<String> = record.iter().map(|f| f.to_string()).collect();
+        // Pad short rows to header length so col_idx lookups are safe
+        while fields.len() < headers.len() {
+            fields.push(String::new());
+        }
+        rows.push(fields);
     }
-
-    let rows: Vec<Vec<String>> = reader
-        .records()
-        .filter_map(|r| r.ok())
-        .filter(|r| r.iter().any(|f| !f.trim().is_empty()))
-        .map(|r| {
-            let mut fields: Vec<String> = r.iter().map(|f| f.to_string()).collect();
-            // Pad short rows to header length so col_idx lookups are safe
-            while fields.len() < headers.len() {
-                fields.push(String::new());
-            }
-            fields
-        })
-        .collect();
 
     Ok(ParsedData { headers, rows })
 }

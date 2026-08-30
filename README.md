@@ -3,6 +3,7 @@
 [![Deploy to GitHub Pages](https://github.com/gregorycarnegie/entragen/actions/workflows/deploy.yml/badge.svg)](https://github.com/gregorycarnegie/entragen/actions/workflows/deploy.yml)
 [![GitHub Pages](https://img.shields.io/badge/live-GitHub%20Pages-blue?logo=github)](https://gregorycarnegie.github.io/entragen/)
 [![Rust](https://img.shields.io/badge/language-Rust-orange?logo=rust)](https://www.rust-lang.org/)
+[![Leptos](https://img.shields.io/badge/framework-Leptos-EF3939?logo=leptos&logoColor=white)](https://leptos.dev/)
 [![WebAssembly](https://img.shields.io/badge/runtime-WebAssembly-654FF0?logo=webassembly)](https://webassembly.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -14,7 +15,7 @@ All processing happens entirely in the browser — no data leaves your machine.
 
 ### House & Year Teams Generator
 
-Upload a Bromcom CSV export and an Entra ID CSV export. Matches students by email address and generates one Entra ID import CSV per house/year combination.
+Upload a Bromcom export and an Entra ID export. Matches students by email address and generates one Entra ID import CSV per house/year combination.
 
 Required columns:
 
@@ -23,13 +24,20 @@ Required columns:
 
 ### Class Distribution Group Generator
 
-Upload a Bromcom Student Emails XLSX, a Bromcom Class List XLSX, and an Entra ID CSV. Filter students by class tags (e.g. `MA`, `EN`, `SC`) and optionally split output by year group.
+Upload a Bromcom Student Emails export, a Bromcom Class List export, and an Entra ID export. Filter students by class tags (e.g. `MA`, `EN`, `SC`) and optionally split output by year group.
 
 Required columns:
 
-- Student Emails XLSX: `Admission Number`, `Student email`, `Year Group Name`
-- Class List XLSX: `AdmissionNo`, `StudentClassList`, `StudentYearGroup`, `StudentFullName`
-- Entra ID CSV: `mail`, `id`
+- Student Emails: `Admission Number`, `Student email`, `Year Group Name`
+- Class List: `AdmissionNo`, `StudentClassList`, `StudentYearGroup`, `StudentFullName`
+- Entra ID: `mail`, `id`
+
+## Input Formats
+
+Every upload accepts `.csv`, `.xlsx`, `.xlsb` or `.ods`, in any slot. The format
+is detected from the file's content rather than its name, so a mislabelled file
+still works. Pre-2007 `.xls` workbooks are refused with a prompt to re-save:
+the format is long superseded and carries the legacy macro attack surface.
 
 ## Output Format
 
@@ -68,6 +76,7 @@ cargo test --workspace
 ```
 
 The `common` crate (pure Rust) is tested natively; the `app` crate (Leptos WASM) has no unit tests.
+Per-crate detail is in [`common/README.md`](common/README.md) and [`app/README.md`](app/README.md).
 
 ### Production build
 
@@ -82,14 +91,17 @@ Output is in `dist/`.
 ```text
 entragen/
 ├── common/          # Pure-Rust logic (parsers, processors) — testable natively
+│   ├── README.md
+│   ├── fixtures/    # Generated .xlsx / .ods test workbooks
 │   └── src/
 │       ├── csv_parser.rs
-│       ├── xlsx_parser.rs
+│       ├── spreadsheet.rs
 │       ├── house_teams.rs
 │       ├── class_distribution.rs
 │       ├── types.rs
 │       └── errors.rs
 ├── app/             # Leptos WASM frontend
+│   ├── README.md
 │   ├── src/
 │   │   ├── app.rs
 │   │   ├── file_io.rs
@@ -103,6 +115,7 @@ entragen/
 │   ├── index.html
 │   └── styles.css
 ├── Trunk.toml
+├── CHANGELOG.md
 ├── Cargo.toml
 └── .github/workflows/deploy.yml
 ```

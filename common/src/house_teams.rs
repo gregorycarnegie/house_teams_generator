@@ -49,8 +49,10 @@ pub fn process(bromcom: &ParsedData, entra: &ParsedData, timestamp: &str) -> Hou
         .col_idx("Year Group Name")
         .expect("validated by parser");
 
-    // group key -> (house label, year label, set of Entra IDs)
-    let mut groups: HashMap<String, (String, String, HashSet<String>)> = HashMap::new();
+    // Keyed on the raw (house, year) pair. Keying on the sanitized name instead
+    // would silently merge distinct houses - "Red House" and "Red/House" both
+    // sanitize to "Red_House".
+    let mut groups: HashMap<(String, String), HashSet<String>> = HashMap::new();
     let mut missing: Vec<MissingMatch> = Vec::new();
     let mut processed = 0usize;
 
@@ -86,11 +88,7 @@ pub fn process(bromcom: &ParsedData, entra: &ParsedData, timestamp: &str) -> Hou
                 });
             }
             Some(id) => {
-                let key = format!("{}_{}", sanitize_name(&house), sanitize_name(&year));
-                let entry = groups
-                    .entry(key)
-                    .or_insert_with(|| (house.clone(), year.clone(), HashSet::new()));
-                entry.2.insert(id.clone());
+                groups.entry((house, year)).or_default().insert(id.clone());
             }
         }
     }
@@ -98,20 +96,48 @@ pub fn process(bromcom: &ParsedData, entra: &ParsedData, timestamp: &str) -> Hou
     let matched = processed - missing.len();
     let group_count = groups.len();
 
+    // Sorted by the filename each group will get, ties broken by the raw key, so
+    // that the duplicate-name suffix below always lands on the same group.
+    let mut groups: Vec<((String, String), HashSet<String>)> = groups.into_iter().collect();
+    groups.sort_by_key(|((house, year), _)| {
+        (
+            sanitize_name(house),
+            sanitize_name(year),
+            house.clone(),
+            year.clone(),
+        )
+    });
+
     let mut files: Vec<GeneratedFile> = groups
         .into_iter()
-        .map(|(key, (_house, _year, ids))| {
-            let id_list: Vec<String> = ids.into_iter().collect();
+        .map(|((house, year), ids)| {
+            let mut id_list: Vec<String> = ids.into_iter().collect();
+            id_list.sort();
             let content = format!("{}\n{}\n", ENTRA_HEADER, id_list.join("\n"));
             GeneratedFile {
-                name: format!("{}_{}.csv", key, timestamp),
+                name: format!(
+                    "{}_{}_{}.csv",
+                    sanitize_name(&house),
+                    sanitize_name(&year),
+                    timestamp
+                ),
                 content,
                 count: id_list.len(),
             }
         })
         .collect();
 
-    files.sort_by(|a, b| a.name.cmp(&b.name));
+    // Distinct houses that sanitize to the same name are now separate groups, so
+    // suffix the duplicate filenames rather than handing back two identical ones.
+    let mut seen: HashMap<String, usize> = HashMap::new();
+    for file in &mut files {
+        let n = seen.entry(file.name.clone()).or_default();
+        *n += 1;
+        if *n > 1 {
+            let stem = file.name.trim_end_matches(".csv").to_string();
+            file.name = format!("{stem}_{n}.csv");
+        }
+    }
 
     HouseTeamsResult {
         processed,
@@ -146,6 +172,10 @@ mod tests {
                 vec!["Blue/House", "missing@school.org", "Year 8"],
                 vec!["", "blankhouse@school.org", "Year 9"],
                 vec!["Green", "   ", "Year 10"],
+                // House name keeps its hyphen but loses its apostrophe, so the
+                // two halves of the sanitize_name predicate are distinguishable.
+                vec!["St-Mary's", "noid@school.org", "Year 11"],
+                vec!["St-Mary's", "bob@school.org", "Year 11"],
             ],
         );
         let entra = parsed(
@@ -153,20 +183,27 @@ mod tests {
             vec![
                 vec!["ID-ALICE", "alice@school.org"],
                 vec!["ID-BLANKHOUSE", "blankhouse@school.org"],
+                // Mail present, ID blank: only one half of the lookup guard fails.
+                vec!["", "noid@school.org"],
+                vec!["ID-BOB", "bob@school.org"],
             ],
         );
 
         let result = process(&bromcom, &entra, "20260510");
 
-        assert_eq!(result.processed, 3);
-        assert_eq!(result.matched, 1);
-        assert_eq!(result.missing_count, 2);
-        assert_eq!(result.group_count, 1);
+        // 5 and 3 chosen so processed - missing is not also processed / missing.
+        assert_eq!(result.processed, 5);
+        assert_eq!(result.matched, 2);
+        assert_eq!(result.missing_count, 3);
+        assert_eq!(result.group_count, 2);
 
-        assert_eq!(result.files.len(), 1);
+        assert_eq!(result.files.len(), 2);
         assert_eq!(result.files[0].name, "Red_House_Year_7_20260510.csv");
         assert_eq!(result.files[0].count, 1);
         assert!(result.files[0].content.contains("ID-ALICE"));
+        assert_eq!(result.files[1].name, "St-Mary_s_Year_11_20260510.csv");
+        assert_eq!(result.files[1].count, 1);
+        assert!(result.files[1].content.contains("ID-BOB"));
 
         let unmatched = result
             .missing
@@ -185,5 +222,60 @@ mod tests {
         assert_eq!(incomplete.house, "");
         assert_eq!(incomplete.year, "Year 9");
         assert_eq!(incomplete.reason, "Missing house or year group");
+
+        let blank_id = result
+            .missing
+            .iter()
+            .find(|m| m.email == "noid@school.org")
+            .expect("student whose Entra row has a blank id should be reported");
+        assert_eq!(blank_id.reason, "No Entra ID found");
+    }
+
+    #[test]
+    fn process_keeps_distinct_houses_that_sanitize_to_the_same_name() {
+        let bromcom = parsed(
+            &["House(s)", "Student email", "Year Group Name"],
+            vec![
+                vec!["Red House", "a@school.org", "Year 7"],
+                vec!["Red/House", "b@school.org", "Year 7"],
+                vec!["Red House", "c@school.org", "Year 7"],
+            ],
+        );
+        let entra = parsed(
+            &["id", "mail"],
+            // Deliberately not in sorted order, so the file contents prove the sort.
+            vec![
+                vec!["ID-C", "c@school.org"],
+                vec!["ID-A", "a@school.org"],
+                vec!["ID-B", "b@school.org"],
+            ],
+        );
+
+        let result = process(&bromcom, &entra, "20260510");
+
+        // Two houses in, two groups out - not one merged group of three.
+        assert_eq!(result.group_count, 2);
+        assert_eq!(result.matched, 3);
+        assert_eq!(
+            result
+                .files
+                .iter()
+                .map(|f| (f.name.as_str(), f.count))
+                .collect::<Vec<_>>(),
+            vec![
+                ("Red_House_Year_7_20260510.csv", 2),
+                ("Red_House_Year_7_20260510_2.csv", 1),
+            ]
+        );
+        // Members are sorted, so the same input always produces the same file.
+        assert!(result.files[0].content.ends_with(
+            "ID-A
+ID-C
+"
+        ));
+        assert!(result.files[1].content.ends_with(
+            "ID-B
+"
+        ));
     }
 }

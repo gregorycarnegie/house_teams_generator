@@ -13,5 +13,8 @@ Thumbs.db
 *.swo
 *~
 
-# Claude memory
-.claude/
+# Claude local settings (skills in .claude/skills are shared)
+.claude/settings.local.json
+
+# cargo-mutants output
+mutants.out/

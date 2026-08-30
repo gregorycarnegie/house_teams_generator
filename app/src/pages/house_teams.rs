@@ -1,11 +1,12 @@
 use leptos::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 
-use crate::components::file_upload::{FileStatus, FileUploadCard};
-use crate::file_io::{current_timestamp, trigger_download};
-use crate::types::{FileData, Page};
-use common::house_teams;
-use common::types::HouseTeamsResult;
+use crate::{
+    components::file_upload::{FileStatus, FileUploadCard},
+    file_io::{current_timestamp, trigger_download},
+    types::{FileData, Page},
+};
+use common::{house_teams, types::HouseTeamsResult};
 
 #[component]
 pub fn HouseTeamsPage(navigate: RwSignal<Page>) -> impl IntoView {
@@ -35,9 +36,8 @@ pub fn HouseTeamsPage(navigate: RwSignal<Page>) -> impl IntoView {
         spawn_local(async move {
             let timestamp = current_timestamp();
 
-            let bromcom_text = String::from_utf8_lossy(&bromcom.bytes).into_owned();
-            let bromcom_parsed = match common::csv_parser::parse_csv(
-                &bromcom_text,
+            let bromcom_parsed = match common::parse_any(
+                &bromcom.bytes,
                 &["House(s)", "Student email", "Year Group Name"],
             ) {
                 Ok(d) => d,
@@ -48,8 +48,7 @@ pub fn HouseTeamsPage(navigate: RwSignal<Page>) -> impl IntoView {
                 }
             };
 
-            let entra_text = String::from_utf8_lossy(&entra.bytes).into_owned();
-            let entra_parsed = match common::csv_parser::parse_csv(&entra_text, &["id", "mail"]) {
+            let entra_parsed = match common::parse_any(&entra.bytes, &["id", "mail"]) {
                 Ok(d) => d,
                 Err(e) => {
                     error_msg.set(Some(format!("Entra file error: {e}")));
@@ -109,21 +108,15 @@ pub fn HouseTeamsPage(navigate: RwSignal<Page>) -> impl IntoView {
                 <div class="upload-grid">
                     <FileUploadCard
                         label="Bromcom Export"
-                        badge="CSV"
                         description="Required: House(s), Student email, Year Group Name"
-                        accept=".csv"
                         required_cols=&["House(s)", "Student email", "Year Group Name"]
-                        is_xlsx=false
                         on_file=bromcom_file.write_only()
                         file_status=bromcom_status
                     />
                     <FileUploadCard
                         label="Entra ID Export"
-                        badge="CSV"
                         description="Required: id, mail"
-                        accept=".csv"
                         required_cols=&["id", "mail"]
-                        is_xlsx=false
                         on_file=entra_file.write_only()
                         file_status=entra_status
                     />

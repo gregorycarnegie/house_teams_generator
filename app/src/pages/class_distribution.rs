@@ -2,11 +2,12 @@ use leptos::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::spawn_local;
 
-use crate::components::file_upload::{FileStatus, FileUploadCard};
-use crate::file_io::{current_timestamp, trigger_download};
-use crate::types::{FileData, Page};
-use common::class_distribution;
-use common::types::ClassDistResult;
+use crate::{
+    components::file_upload::{FileStatus, FileUploadCard},
+    file_io::{current_timestamp, trigger_download},
+    types::{FileData, Page},
+};
+use common::{class_distribution, types::ClassDistResult};
 
 #[component]
 pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
@@ -51,7 +52,7 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
             let timestamp = current_timestamp();
             let tags = class_distribution::parse_tags(&raw_tags);
 
-            let emails_parsed = match common::xlsx_parser::parse_xlsx(
+            let emails_parsed = match common::parse_any(
                 &emails.bytes,
                 &["Admission Number", "Year Group Name", "Student email"],
             ) {
@@ -63,7 +64,7 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
                 }
             };
 
-            let class_parsed = match common::xlsx_parser::parse_xlsx(
+            let class_parsed = match common::parse_any(
                 &class.bytes,
                 &[
                     "StudentFullName",
@@ -80,8 +81,7 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
                 }
             };
 
-            let entra_text = String::from_utf8_lossy(&entra.bytes).into_owned();
-            let entra_parsed = match common::csv_parser::parse_csv(&entra_text, &["mail", "id"]) {
+            let entra_parsed = match common::parse_any(&entra.bytes, &["mail", "id"]) {
                 Ok(d) => d,
                 Err(e) => {
                     error_msg.set(Some(format!("Entra file error: {e}")));
@@ -150,31 +150,22 @@ pub fn ClassDistributionPage(navigate: RwSignal<Page>) -> impl IntoView {
                 <div class="upload-grid">
                     <FileUploadCard
                         label="Student Emails"
-                        badge="XLSX"
                         description="Required: Admission Number, Year Group Name, Student email"
-                        accept=".xlsx,.xls"
                         required_cols=&["Admission Number", "Year Group Name", "Student email"]
-                        is_xlsx=true
                         on_file=emails_file.write_only()
                         file_status=emails_status
                     />
                     <FileUploadCard
                         label="Student Class List"
-                        badge="XLSX"
                         description="Required: StudentFullName, StudentYearGroup, StudentClassList, AdmissionNo"
-                        accept=".xlsx,.xls"
                         required_cols=&["StudentFullName", "StudentYearGroup", "StudentClassList", "AdmissionNo"]
-                        is_xlsx=true
                         on_file=class_file.write_only()
                         file_status=class_status
                     />
                     <FileUploadCard
                         label="Entra ID Export"
-                        badge="CSV"
                         description="Required: mail, id"
-                        accept=".csv"
                         required_cols=&["mail", "id"]
-                        is_xlsx=false
                         on_file=entra_file.write_only()
                         file_status=entra_status
                     />
